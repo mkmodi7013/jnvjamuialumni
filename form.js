@@ -1,6 +1,6 @@
 // Import the functions you need from the SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+import { getDatabase, ref, push, set, get } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -22,26 +22,42 @@ const database = getDatabase(app);
 // Reference to the form
 const form = document.getElementById('registrationForm');
 
-form.addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent page refresh
+form.addEventListener("submit", async (e) => { // ✅ async function
+  e.preventDefault();
 
-    // Get form values
-    const name = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const course = document.getElementById('course').value;
+  const name = document.getElementById("name").value;
+  const email = document.getElementById("email").value;
+  const course = document.getElementById("course").value;
 
-    // Create a new entry in Firebase
-    const newEntryRef = push(ref(database, 'registrations')); // "registrations" is the collection
-    set(newEntryRef, {
-        name: name,
-        email: email,
-        course: course
-    })
-    .then(() => {
-        alert('Data submitted successfully!');
-        form.reset();
-    })
-    .catch((error) => {
-        console.error('Error submitting data:', error);
-    });
+  const registrationsRef = ref(database, 'registrations');
+
+  try {
+    const snapshot = await get(registrationsRef); // ✅ await inside async function
+    let nextNumber = 1;
+
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      const keys = Object.keys(data);
+
+      keys.forEach(key => {
+        const match = key.match(/jnvjamui(\d+)/);
+        if (match) {
+          const num = parseInt(match[1], 10);
+          if (num >= nextNumber) nextNumber = num + 1;
+        }
+      });
+    }
+
+    const newKey = "jnvjamui" + String(nextNumber).padStart(2, "0");
+
+    await set(ref(database, 'registrations/' + newKey), { name, email, course });
+
+    alert(`Registration added with ID: ${newKey}`);
+    form.reset();
+  } catch (error) {
+    console.error(error);
+  }
 });
+
+
+ 
