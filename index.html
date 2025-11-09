@@ -1,14 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Form</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JNV JAMUI ALUMNI ASSOCIATION</title>
+  <link rel="stylesheet" href="responsive.css" />
 </head>
 <body>
-    <h2>Course Registration Form</h2>
-    <form id="registrationForm">
-        <label for="name">Name:</label>
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">JNVS ALUMNI</div>
+
+    <!-- Hamburger icon -->
+    <div class="hamburger" id="hamburger">
+      ☰
+    </div>
+
+    <!-- Navigation links -->
+    <nav>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="index.html">Home</a></li>
+         <li><a href="#alumni">Alumni</a></li>
+        <li><a href="#">Media</a></li>
+        <li><a href="#">Members</a></li>
+        <li><a href="#">Articles</a></li>
+        <li><a href="#">Notices</a></li>
+        <li><a href="#">Account</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+    <h1><u>JNV Jamui Alumni Association</u></h1>
+    <img src="img/jnvjamui.jpg" 
+           alt="Hero Banner" 
+           class="hero-image">
+  </section>
+
+  <!-- MAIN CONTENT -->
+  <section class="cards">
+    <div class="card">
+        <h1><u>Online Alumni Network of JNV Jamui</u> </h1>
+        <h3>Welcome to the official website of JNV Jamui Alumni Association.</h3>
+        <p>Our alumni association, affiliated with Jawahar Navodaya Vidyalaya Jamui, is dedicated to enhancing the alumni 
+            experience and fostering meaningful connections within the JNV community. Our primary goal is to create a robust 
+            network that supports the growth and development of both current students and alumni, ultimately contributing to
+             the overall progress of our beloved alma mater. By providing essential resources, guidance, motivation, and financial
+              assistance in various areas of interest, we aim to empower our members on their journeys to success.
+           Join our vibrant community on social networks to connect with fellow alumni, access a plethora of benefits, and tap 
+           into the power of your alumni membership.</p>
+    </div>
+   <div class="card">
+        <h1>About us</h1>
+        <p>Our members comprise alumni from Jawahar Navodaya Vidyalaya Jamui (Bihar), and we stay closely connected through
+             various social networking platforms, especially Facebook. The association is led by dedicated seniors and active
+              members who ensure its smooth functioning both online and through school-level activities, including our Annual
+               Alumni Meet.</p>
+    </div> <div class="card">
+        <h1>What we do?</h1>
+        <ul>
+        <li>Career Counselling and Academic Support: We provide valuable career guidance and academic advice to current students
+             and fellow alumni of JNV Jamui.</li>
+        <li>Professional Networking: Our platform aims to connect all alumni for the advancement of their professional careers.</li>
+        <li> Educational Exchange: We foster the exchange of educational guidelines and information among our alumni and students.</li>
+        <li>Financial Assistance: We offer possible financial aid to alumni or students pursuing their academic aspirations.</li>
+        </ul>
+    </div>
+    <div class="card">
+        <p>Join us in making a difference and strengthening the bonds that tie us together as proud members of the JNV Jamui
+             family. Together, we can achieve greatness and support the growth of our alma mater.</p>
+    </div>
+    <div id="alumni"  class="card">
+        <h1>Alumni Registration Form</h1>
+        <p>Login to Alumni Portal to Manage your profile and access Alumni membership benefits.
+             This portal is fully developed, managed and owned by JNV Jamui Alumni Association.</p>
+     <!-- Button linking to form -->
+      <button class="btn-primary open-modal">Open Alumni Portal Form</button>
+    </div>
+    
+  </section>
+
+  <!-- Modal Background -->
+<div id="contact-modal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Update Your Profile</h2>
+    <form id="registrationForm" action="#" method="POST">
+      <label for="name">Name:</label>
         <input type="text" id="name" required><br><br>
 
         <label for="email">Email:</label>
@@ -19,7 +100,15 @@
 
         <button type="submit">Submit</button>
     </form>
+  </div>
+</div>
 
-    <script type="module" src="form.js"></script>
+  <!-- FOOTER -->
+  <footer>
+    <p>© JNV Jamui Alumni Association | Privacy | Regulations.</p>
+  </footer>
+
+  <script src="responsive.js"></script>
+  <script type="module" src="form.js"></script>
 </body>
 </html>
