@@ -6,6 +6,8 @@ hamburger.addEventListener('click', () => {
   navLinks.classList.toggle('show');
 });
 
+
+
 // Get modal element
 const modal = document.getElementById('contact-modal');
 

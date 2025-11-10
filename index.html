@@ -79,6 +79,9 @@
              This portal is fully developed, managed and owned by JNV Jamui Alumni Association.</p>
      <!-- Button linking to form -->
       <button class="btn-primary open-modal">Open Alumni Portal Form</button>
+      <!-- FETCH ALUMANI DATA -->
+
+       <button id="fetch_btn" onclick="window.open('fetchAlumniData.html', '_blank')">FETCH ALUMNI DATA</button>
     </div>
     
   </section>
@@ -91,17 +94,93 @@
     <form id="registrationForm" action="#" method="POST">
       <label for="name">Name:</label>
         <input type="text" id="name" required><br><br>
+      <label for="gender">Gender:</label>
+        <select id="gender" name="gender">
+        <option value="">--Select--</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+        </select></br>
+        <label for="profile">Profile Type:</label>
+        <select id="profile" name="profile">
+        <option value="">--Select--</option>
+        <option value="JNVAlumni">JNV Alumni</option>
+        <option value="JNVStaff">JNV Staff</option>
+        <option value="CurrentJNVStudent">Current JNV Student</option>
+        <option value="FormerJNVStaff">Former JNV Staff</option>
+        </select></br>
+        <label for="entryclass">Entry Class:</label>
+        <select id="entryclass" name="entryclass">
+        <option value="">--Select--</option>
+        <option value="6">6</option>
+         <option value="7">7</option>
+          <option value="8">8</option>
+           <option value="9">9</option>
+            <option value="10">10</option>
+             <option value="11">11</option>
+              <option value="12">12</option>
+        </select></br>
+        <label for="exitclass">Exit Class:</label>
+        <select id="exitclass" name="exitclass">
+        <option value="">--Select--</option>
+        <option value="6">6</option>
+         <option value="7">7</option>
+          <option value="8">8</option>
+           <option value="9">9</option>
+            <option value="10">10</option>
+             <option value="11">11</option>
+              <option value="12">12</option>
+        </select></br>
+         <label for="entryyear">Select Entry Year:</label>
+<select id="entryyear" name="entryyear">
+  <option value="">-- Select Year --</option>
+</select>
 
+<script>
+  const select = document.getElementById('entryyear');
+  const currentYear = new Date().getFullYear(); // dynamically gets current year
+
+  for (let year = 1997; year <= currentYear; year++) {
+    const option = document.createElement('option');
+    option.value = year;
+    option.textContent = year;
+    select.appendChild(option);
+  }
+</script><br>
+<label for="exityear">Select Exit Year:</label>
+<select id="exityear" name="exityear">
+  <option value="">-- Select Year --</option>
+</select>
+
+<script>
+  const select1 = document.getElementById('exityear');
+  const currentYear1 = new Date().getFullYear(); // dynamically gets current year
+
+  for (let year1 = 1997; year1 <= currentYear1; year1++) {
+    const option1 = document.createElement('option');
+    option1.value = year1;
+    option1.textContent = year1;
+    select1.appendChild(option1);
+  }
+</script><br>
+     
         <label for="email">Email:</label>
         <input type="email" id="email" required><br><br>
 
-        <label for="course">Course:</label>
-        <input type="text" id="course" required><br><br>
+        <label for="mobile">Mobile No.:</label>
+        <input type="text" id="mobile" required><br><br>
+         <label for="work">Currently Working</label>
+        <input type="text" id="organisation" placeholder="organisation"><br><br>
+        <input type="text" id="designation" placeholder="Job Title"><br><br>
 
         <button type="submit">Submit</button>
     </form>
   </div>
 </div>
+ 
+
+
+
 
   <!-- FOOTER -->
   <footer>
@@ -109,6 +188,6 @@
   </footer>
 
   <script src="responsive.js"></script>
-  <script type="module" src="form.js"></script>
+  <script type="module" src="form1.js"></script>
 </body>
 </html>
