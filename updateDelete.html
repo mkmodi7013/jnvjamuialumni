@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alumni Data</title>
+<link rel="stylesheet" href="updateDelete.css">
+</head>
+<body>
+
+<h1>JNV Jamui Alumni Details</h1>
+
+<table id="alumniTable">
+  <thead>
+    <tr>
+       <th>Index</th>
+      <th>Alumni ID</th>
+      <th>Name</th>
+      <th>Gender</th>
+      <th>Profile</th>
+      <th>Entry Class</th>
+      <th>Exit Class</th>
+      <th>Entry Year</th>
+      <th>Exit Year</th>
+      <th>Email</th>
+      <th>Mobile</th>
+      <th>Organisation</th>
+      <th>Designation</th>
+      <th>Submitted At</th>
+      <th>Action</th> <!-- Only Update now -->
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td colspan="15">Loading...</td></tr>
+  </tbody>
+</table>
+
+<!-- Update Modal -->
+<div id="updateModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h2>Update Alumni Data</h2>
+    <form id="updateForm">
+      <input type="hidden" id="updateKey">
+
+      <label>Name:</label>
+      <input type="text" id="updateName" required>
+      <label>Gender:</label>
+      <input type="text" id="updateGender" required>
+      <label>Profile:</label>
+      <input type="text" id="updateProfile" required>
+      <label>Entry Class:</label>
+      <input type="text" id="updateEntryClass">
+      <label>Exit Class:</label>
+      <input type="text" id="updateExitClass">
+      <label>Entry Year:</label>
+      <input type="text" id="updateEntryYear">
+      <label>Exit Year:</label>
+      <input type="text" id="updateExitYear">
+      <label>Email:</label>
+      <input type="email" id="updateEmail">
+      <label>Mobile:</label>
+      <input type="text" id="updateMobile">
+      <label>Organisation:</label>
+      <input type="text" id="updateOrganisation">
+      <label>Designation:</label>
+      <input type="text" id="updateDesignation">
+
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+</div>
+
+<script type="module" src="updateDelete.js"></script>
+</body>
+</html>

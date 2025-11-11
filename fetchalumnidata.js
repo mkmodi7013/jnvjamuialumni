@@ -21,12 +21,17 @@ async function fetchAlumni() {
   const tableBody = document.querySelector("#alumniTable tbody");
   tableBody.innerHTML = `<tr><td class="loading" colspan="13">Loading...</td></tr>`;
 
+  
+
+
   try {
     const snapshot = await get(child(ref(db), "alumni"));
     if (snapshot.exists()) {
       alumniData = snapshot.val();
+      //const alumniId = Object.keys(alumniData);
       populateFilters(alumniData);
       renderTable(alumniData);
+      
     } else {
       tableBody.innerHTML = `<tr><td colspan="13" class="loading">No alumni found.</td></tr>`;
     }
@@ -35,6 +40,7 @@ async function fetchAlumni() {
     tableBody.innerHTML = `<tr><td colspan="13" class="loading">Error loading data.</td></tr>`;
   }
 }
+
 
 function populateFilters(data) {
   const genders = new Set();
@@ -67,10 +73,13 @@ function renderTable(data) {
   }
 
   keys.forEach((key, index) => {
+    
     const a = data[key];
+   
     const row = `
       <tr>
         <td>${index + 1}</td>
+        <td>${key}</td>
         <td>${a.name || ''}</td>
         <td>${a.gender || ''}</td>
         <td>${a.profile || ''}</td>

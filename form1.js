@@ -43,6 +43,7 @@ form.addEventListener("submit", async (e) => {
 
   try {
     // 🔹 Step 1: Get current alumni list
+     
     const snapshot = await get(child(dbRef, "alumni"));
     let nextIndex = 1;
 
@@ -50,12 +51,16 @@ form.addEventListener("submit", async (e) => {
       const alumniDataAll = snapshot.val();
       const totalCount = Object.keys(alumniDataAll).length;
       nextIndex = totalCount + 1;
+      
     }
+   
 
     // 🔹 Step 2: Create new custom key like jnvjamui1, jnvjamui2, etc.
     const newKey = `jnvjamui${nextIndex}`;
 
     // 🔹 Step 3: Save data under that key
+   
+
     await set(ref(db, "alumni/" + newKey), alumniData);
 
     alert(`✅ Data saved successfully as "${newKey}"`);
