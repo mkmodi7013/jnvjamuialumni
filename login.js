@@ -98,8 +98,9 @@ verifyOtpBtn.addEventListener("click", async () => {
       localStorage.setItem("loggedInPhone", phoneNumber);
       window.location.href = "dashboard.html";
     } else {
-          alert("❌ Mobile number not registered in alumni database.");
-      window.location.reload();
+      
+          alert("❌ Mobile number not registered. First register yourself.");
+      window.location.href = "index.html";
     }
 
   } catch (error) {
@@ -107,3 +108,4 @@ verifyOtpBtn.addEventListener("click", async () => {
     statusMessage.innerText = `❌ ${error.message}`;
   }
 });
+
