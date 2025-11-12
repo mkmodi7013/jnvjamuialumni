@@ -1,0 +1,73 @@
+body {
+  font-family: "Poppins", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: linear-gradient(135deg, #2196f3, #21cbf3);
+  margin: 0;
+}
+
+.login-container {
+  background: #fff;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  text-align: center;
+  width: 340px;
+}
+
+h2 {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.phone-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+select {
+  padding: 10px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  font-size: 15px;
+}
+
+input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+  background: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 12px;
+}
+
+button:hover {
+  background: #1976d2;
+}
+
+#statusMessage {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+#recaptcha-container {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
