@@ -35,3 +35,42 @@ window.addEventListener('click', (e) => {
     modal.style.display = 'none';
   }
 });
+
+// ---------------- MODAL LOGIN ----------------
+
+// Open/Close Login Modal
+const loginModal = document.getElementById("login-modal");
+const openLoginBtn = document.querySelector(".open-login");
+const closeLoginBtn = document.querySelector(".close-login");
+
+openLoginBtn.addEventListener("click", () => {
+  loginModal.style.display = "block";
+});
+
+closeLoginBtn.addEventListener("click", () => {
+  loginModal.style.display = "none";
+});
+
+window.addEventListener("click", (e) => {
+  if (e.target === loginModal) {
+    loginModal.style.display = "none";
+  }
+});
+
+
+openLoginBtn.addEventListener("click", () => {
+  loginModal.style.display = "block";
+});
+
+closeLoginBtn.addEventListener("click", () => {
+  loginModal.style.display = "none";
+});
+
+window.addEventListener("click", (e) => {
+  if (e.target === loginModal) {
+    loginModal.style.display = "none";
+  }
+});
+
+
+

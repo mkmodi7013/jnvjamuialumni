@@ -1,18 +1,12 @@
-// Import Firebase SDK
+// Import Firebase modules
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import {
-  getAuth,
-  RecaptchaVerifier,
-  signInWithPhoneNumber,
+import { 
+  getAuth, 
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getDatabase,
-  ref,
-  get,
-  child,
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// 🔥 Firebase Configuration
+// ✅ Your Firebase Configuration (replace with your project values)
 const firebaseConfig = {
   apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
   authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
@@ -20,92 +14,82 @@ const firebaseConfig = {
   projectId: "jnvjamuialumni-edceb",
   storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
   messagingSenderId: "412877503961",
-  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8",
+  measurementId: "G-D59BC7Q6JE"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getDatabase(app);
-const dbRef = ref(db);
 
-// Elements
-const sendOtpBtn = document.getElementById("sendOtpBtn");
-const verifyOtpBtn = document.getElementById("verifyOtpBtn");
-const countryCodeSelect = document.getElementById("countryCode");
-const phoneNumberInput = document.getElementById("phoneNumber");
-const otpInput = document.getElementById("otpCode");
-const loginSection = document.getElementById("loginSection");
-const verifySection = document.getElementById("verifySection");
-const statusMessage = document.getElementById("statusMessage");
+// ---------------- LOGIN ----------------
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const msg = document.getElementById("auth-message");
 
-let confirmationResult;
+loginForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
-// 🧩 reCAPTCHA Setup
-window.recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-  size: "normal",
-  callback: () => console.log("reCAPTCHA verified ✅"),
-  "expired-callback": () => alert("reCAPTCHA expired. Please refresh."),
+  signInWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      msg.style.color = "green";
+      msg.textContent = "Login successful!";
+   window.location.href = "myprofile.html";
+      setTimeout(() => {
+        document.getElementById("login-modal").style.display = "none";
+      }, 1000);
+    })
+    .catch((error) => {
+      msg.style.color = "red";
+      msg.textContent = error.message;
+    });
 });
 
-// 🚀 Step 1: Send OTP
-sendOtpBtn.addEventListener("click", async () => {
-  const countryCode = countryCodeSelect.value;
-  const phone = phoneNumberInput.value.trim();
+// ---------------- SIGNUP ----------------
+signupForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const name = document.getElementById("signup-name").value;
+  const email = document.getElementById("signup-email").value;
+  const password = document.getElementById("signup-password").value;
 
-  if (!phone) return alert("Please enter your phone number.");
-
-  const fullPhone = `${countryCode}${phone}`;
-  try {
-    confirmationResult = await signInWithPhoneNumber(auth, fullPhone, window.recaptchaVerifier);
-    statusMessage.innerText = `✅ OTP sent to ${fullPhone}`;
-    loginSection.style.display = "none";
-    verifySection.style.display = "block";
-  } catch (error) {
-    console.error("Error sending OTP:", error);
-    statusMessage.innerText = `❌ ${error.message}`;
-  }
+  createUserWithEmailAndPassword(auth, email, password)
+    .then(() => {
+      msg.style.color = "green";
+      msg.textContent = "Account created successfully! You can now log in.";
+      signupForm.style.display = "none";
+      loginForm.style.display = "block";
+      document.getElementById("modal-title").textContent = "Login to Alumni Portal";
+      document.getElementById("show-signup").style.display = "inline";
+      document.getElementById("show-login").style.display = "none";
+    })
+    .catch((error) => {
+      msg.style.color = "red";
+      msg.textContent = error.message;
+    });
 });
 
-// 🚀 Step 2: Verify OTP and check in Realtime Database
-verifyOtpBtn.addEventListener("click", async () => {
-  const otpCode = otpInput.value.trim();
-  if (!otpCode) return alert("Enter the OTP received.");
+// ---------------- TOGGLE BETWEEN LOGIN/SIGNUP ----------------
+const showSignup = document.getElementById("show-signup");
+const showLogin = document.getElementById("show-login");
 
-  try {
-    const result = await confirmationResult.confirm(otpCode);
-    const user = result.user;
-    const phoneNumber = user.phoneNumber;
-
-    // 🔍 Check if this phone exists in Realtime Database
-    const snapshot = await get(child(dbRef, "alumni"));
-    let exists = false;
-    let foundKey = null;
-
-    if (snapshot.exists()) {
-      const alumniData = snapshot.val();
-      for (const key in alumniData) {
-        if (alumniData[key].mobile === phoneNumber) {
-          exists = true;
-          foundKey = key;
-          break;
-        }
-      }
-    }
-
-    if (exists) {
-      alert(`✅ Welcome back! Logged in as ${phoneNumber}`);
-      localStorage.setItem("loggedInPhone", phoneNumber);
-      window.location.href = "dashboard.html";
-    } else {
-      
-          alert("❌ Mobile number not registered. First register yourself.");
-      window.location.href = "index.html";
-    }
-
-  } catch (error) {
-    console.error("Error verifying OTP:", error);
-    statusMessage.innerText = `❌ ${error.message}`;
-  }
+showSignup.addEventListener("click", (e) => {
+  e.preventDefault();
+  loginForm.style.display = "none";
+  signupForm.style.display = "block";
+  document.getElementById("modal-title").textContent = "Create an Account";
+  showSignup.style.display = "none";
+  showLogin.style.display = "inline";
+  msg.textContent = "";
 });
 
+showLogin.addEventListener("click", (e) => {
+  e.preventDefault();
+  signupForm.style.display = "none";
+  loginForm.style.display = "block";
+  document.getElementById("modal-title").textContent = "Login to Alumni Portal";
+  showSignup.style.display = "inline";
+  showLogin.style.display = "none";
+  msg.textContent = "";
+});

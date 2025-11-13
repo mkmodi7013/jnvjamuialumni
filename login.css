@@ -1,114 +1,86 @@
-/* Reset basic defaults */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-
-/* Full-page background */
 body {
-  background: linear-gradient(135deg, #007bff, #6dd5fa, #ffffff);
-  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(120deg, #6a11cb, #2575fc);
+  color: white;
+  height: 100vh;
+  margin: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
 }
 
-/* Login box container */
-.login-container {
-  background: #fff;
-  padding: 30px 25px;
-  width: 90%;
-  max-width: 380px;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-  text-align: center;
-}
-
-/* Title */
-.login-container h2 {
-  margin-bottom: 25px;
-  color: #007bff;
-  font-size: 24px;
-}
-
-/* Phone input section */
-.phone-input {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.phone-input select,
-.phone-input input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  font-size: 14px;
-}
-
-.phone-input select {
-  width: 35%;
-  cursor: pointer;
-}
-
-.phone-input input {
-  width: 65%;
-}
-
-/* OTP input */
-#otpCode {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 15px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 14px;
-}
-
-/* Buttons */
 button {
-  width: 100%;
-  padding: 10px;
+  background: white;
+  color: #2575fc;
+  padding: 10px 20px;
   border: none;
-  background: #007bff;
-  color: #fff;
-  font-size: 16px;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: background 0.3s ease;
+  font-size: 16px;
+  transition: 0.3s;
 }
 
 button:hover {
-  background: #0056b3;
+  background: #2575fc;
+  color: white;
 }
 
-/* Status message */
-#statusMessage {
-  margin-top: 15px;
-  font-size: 14px;
+/* Modal background */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.6);
+}
+
+/* Modal content box */
+.modal-content {
+  background-color: white;
+  color: black;
+  margin: 10% auto;
+  padding: 30px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  position: relative;
+}
+
+/* Close button */
+#closeModal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
   color: #333;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
 }
 
-/* Recaptcha box spacing */
-#recaptcha-container {
-  margin: 10px 0 15px;
+input {
+  width: 90%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 6px;
 }
 
-/* Responsive design */
-@media (max-width: 480px) {
-  .login-container {
-    padding: 25px 20px;
-  }
+#loginBtn {
+  background: #2575fc;
+  color: white;
+  width: 100%;
+}
 
-  .login-container h2 {
-    font-size: 20px;
-  }
+#loginBtn:hover {
+  background: #1b5edc;
+}
 
-  button {
-    font-size: 15px;
-  }
+#message {
+  margin-top: 10px;
+  font-size: 14px;
 }
