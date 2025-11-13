@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suggestion| JNV Jamui Alumni</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      padding: 20px;
+      text-align: center;
+    }
+    textarea {
+      width: 90%;
+      max-width: 500px;
+      height: 150px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      resize: none;
+      margin-top: 20px;
+    }
+    .btn {
+      margin-top: 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Write Your Suggestion here.</h2>
+  <textarea id="noteText" placeholder="Type your message here..."></textarea><br>
+  <button class="btn" id="saveNote">Send</button>
+
+  <script type="module">
+    // Import Firebase SDKs
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // 🔹 Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+      authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+      databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
+      projectId: "jnvjamuialumni-edceb",
+      storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+      messagingSenderId: "412877503961",
+      appId: "1:412877503961:web:8cfc88edcc694a43b9edc8",
+      measurementId: "G-D59BC7Q6JE"
+    };
+
+    // 🔹 Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const firestore = getFirestore(app);
+
+    const noteText = document.getElementById("noteText");
+    const saveBtn = document.getElementById("saveNote");
+
+    // 🧠 When user is logged in
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Please log in first!");
+        window.location.href = "index.html";
+        return;
+      }
+
+      const userEmail = user.email;
+      const dbRef = ref(db);
+
+      // 🔍 Find Realtime DB key for logged user
+      try {
+        const snapshot = await get(child(dbRef, "alumni"));
+        if (snapshot.exists()) {
+          const alumniData = snapshot.val();
+          let foundKey = null;
+
+          Object.entries(alumniData).forEach(([key, record]) => {
+            if (record.email && record.email.toLowerCase() === userEmail.toLowerCase()) {
+              foundKey = key;
+            }
+          });
+
+          if (!foundKey) {
+            alert("No record found for your account in Realtime Database!");
+            return;
+          }
+
+          // 📝 Save note to Firestore with that key
+          saveBtn.addEventListener("click", async () => {
+            const text = noteText.value.trim();
+            if (!text) return alert("Please write something first!");
+
+            try {
+              await setDoc(doc(firestore, "suggestion", foundKey), {
+                note: text,
+                timestamp: new Date().toISOString(),
+                email: userEmail
+              });
+              alert("Congratulation! Your Suggestion has been sent successfully!");
+              window.location.href = "index.html";
+              noteText.value = "";
+            } catch (error) {
+              console.error(error);
+              alert("Error sending Suggestion: " + error.message);
+            }
+          });
+
+        } else {
+          alert("No alumni data found!");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Error accessing database: " + error.message);
+      }
+    });
+  </script>
+</body>
+</html>

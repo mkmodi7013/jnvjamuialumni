@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Profile Form Popup</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f3f8ff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* 🔘 Open Button */
+    #openBtn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background 0.3s;
+    }
+
+    #openBtn:hover {
+      background: #0056b3;
+    }
+
+    /* 🔲 Popup background */
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      z-index: 999;
+    }
+
+    /* 🧾 Popup box */
+    .popup-content {
+      background: #fff;
+      width: 90%;
+      max-width: 480px;
+      margin: 80px auto;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+      position: relative;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* ❌ Close button */
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      color: #333;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      color: #007bff;
+    }
+
+    /* Form Elements */
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    button[type="submit"] {
+      width: 100%;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background: #0056b3;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 🔘 Button to open popup -->
+  <button id="openBtn">Update Profile</button>
+
+  <!-- 🧾 Popup Modal -->
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <span id="closeBtn" class="close">&times;</span>
+      <h2>Update Your Profile</h2>
+
+      <form id="registrationForm">
+        <label for="name">Name:</label>
+        <input type="text" id="name" required>
+
+        <label for="gender">Gender:</label>
+        <select id="gender">
+          <option value="">--Select--</option>
+          <option>Male</option>
+          <option>Female</option>
+          <option>Other</option>
+        </select>
+
+        <label for="profile">Profile Type:</label>
+        <select id="profile">
+          <option value="">--Select--</option>
+          <option>JNV Alumni</option>
+          <option>JNV Staff</option>
+          <option>Current JNV Student</option>
+          <option>Former JNV Staff</option>
+        </select>
+
+        <label for="entryclass">Entry Class:</label>
+        <select id="entryclass">
+          <option value="">--Select--</option>
+          <option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+
+        <label for="exitclass">Exit Class:</label>
+        <select id="exitclass">
+          <option value="">--Select--</option>
+          <option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+
+        <label for="entryyear">Select Entry Year:</label>
+        <select id="entryyear">
+          <option value="">--Select Year--</option>
+        </select>
+
+        <label for="exityear">Select Exit Year:</label>
+        <select id="exityear">
+          <option value="">--Select Year--</option>
+        </select>
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" required>
+
+        <label for="mobile">Mobile No.:</label>
+        <input type="text" id="mobile" required>
+
+        <label for="organisation">Currently Working:</label>
+        <input type="text" id="organisation" placeholder="Organisation">
+
+        <input type="text" id="designation" placeholder="Job Title">
+
+        <button type="submit">Submit</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Get elements
+    const openBtn = document.getElementById("openBtn");
+    const popup = document.getElementById("popup");
+    const closeBtn = document.getElementById("closeBtn");
+
+    // Open popup
+    openBtn.onclick = function() {
+      popup.style.display = "block";
+    };
+
+    // Close popup
+    closeBtn.onclick = function() {
+      popup.style.display = "none";
+    };
+
+    // Close if click outside
+    window.onclick = function(event) {
+      if (event.target === popup) {
+        popup.style.display = "none";
+      }
+    };
+
+    // Populate dropdown years
+    const entryYear = document.getElementById("entryyear");
+    const exitYear = document.getElementById("exityear");
+    const currentYear = new Date().getFullYear();
+
+    for (let year = 1997; year <= currentYear; year++) {
+      entryYear.add(new Option(year, year));
+      exitYear.add(new Option(year, year));
+    }
+  </script>
+
+</body>
+</html>

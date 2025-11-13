@@ -58,6 +58,7 @@ function createTable(userData, key) {
     <div style="text-align:center; margin-top:20px;">
       <button class="btn" id="updateBtn">Update</button>
       <button class="btn" id="logoutBtn" style="background:#dc3545;">Logout</button>
+      
     </div>`;
 
   profileContainer.innerHTML = table;
@@ -129,3 +130,4 @@ onAuthStateChanged(auth, (user) => {
     profileContainer.innerHTML = `<p>You are not logged in. Please <a href="index.html">login</a> first.</p>`;
   }
 });
+

@@ -71,6 +71,26 @@ window.addEventListener("click", (e) => {
     loginModal.style.display = "none";
   }
 });
+// 🔹 Open Modal
+function openLoginModal() {
+  modal.style.display = "flex";
+
+  // 🧹 Clear previous input values each time
+  document.getElementById("login-email").value = "";
+  document.getElementById("login-password").value = "";
+
+  document.getElementById("signup-name").value = "";
+  document.getElementById("signup-email").value = "";
+  document.getElementById("signup-password").value = "";
+
+  // Ensure login form shows by default
+  loginForm.style.display = "block";
+  signupForm.style.display = "none";
+  showSignup.style.display = "inline";
+  showLogin.style.display = "none";
+  document.getElementById("modal-title").innerText = "Login to Alumni Portal";
+}
+
 
 
 

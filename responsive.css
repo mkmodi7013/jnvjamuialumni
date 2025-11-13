@@ -168,9 +168,7 @@ footer {
 
 
 /* Modal styling */
-
 .modal {
-
   display: none; /* Hidden by default */
   position: fixed;
   z-index: 1001; 
@@ -261,41 +259,6 @@ button {
 button:hover {
   background: #0056b3;
 }
-/* Full-screen overlay */
-  .modal {
-    display: flex;                  /* Flexbox layout */
-    justify-content: center;        /* Center horizontally */
-    align-items: flex-start;        /* Start from top */
-    padding-top: 10vh;              /* 👈 10% of screen height as top space */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-  }
-
-  /* Popup box */
-  .modal-content {
-    background: white;
-    width: 90%;
-    max-width: 350px;
-    padding: 20px;
-    border-radius: 10px;
-  }
-
-  /* Responsive: increase spacing on large screens */
-  @media (min-width: 768px) {
-    .modal {
-      padding-top: 15vh;
-    }
-  }
-  @media (min-width: 1200px) {
-    .modal {
-      padding-top: 20vh;
-    }
-  }
-
 
 
   
