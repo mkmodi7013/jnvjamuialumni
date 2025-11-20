@@ -38,6 +38,7 @@ form.addEventListener("submit", async (e) => {
     mobile: document.getElementById("mobile").value,
     organisation: document.getElementById("organisation").value,
     designation: document.getElementById("designation").value,
+      location: document.getElementById("location").value,
     submittedAt: new Date().toISOString()
   };
 

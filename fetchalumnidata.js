@@ -19,28 +19,22 @@ let alumniData = {};
 
 async function fetchAlumni() {
   const tableBody = document.querySelector("#alumniTable tbody");
-  tableBody.innerHTML = `<tr><td class="loading" colspan="13">Loading...</td></tr>`;
-
-  
-
+  tableBody.innerHTML = `<tr><td class="loading" colspan="14">Loading...</td></tr>`;
 
   try {
     const snapshot = await get(child(ref(db), "alumni"));
     if (snapshot.exists()) {
       alumniData = snapshot.val();
-      //const alumniId = Object.keys(alumniData);
       populateFilters(alumniData);
       renderTable(alumniData);
-      
     } else {
-      tableBody.innerHTML = `<tr><td colspan="13" class="loading">No alumni found.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="14" class="loading">No alumni found.</td></tr>`;
     }
   } catch (error) {
     console.error("Error fetching data:", error);
-    tableBody.innerHTML = `<tr><td colspan="13" class="loading">Error loading data.</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="14" class="loading">Error loading data.</td></tr>`;
   }
 }
-
 
 function populateFilters(data) {
   const genders = new Set();
@@ -67,15 +61,14 @@ function renderTable(data) {
   tableBody.innerHTML = "";
   const keys = Object.keys(data);
 
-  if(keys.length === 0){
-    tableBody.innerHTML = `<tr><td colspan="13" class="loading">No records found.</td></tr>`;
+  if (keys.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="14" class="loading">No records found.</td></tr>`;
     return;
   }
 
   keys.forEach((key, index) => {
-    
     const a = data[key];
-   
+
     const row = `
       <tr>
         <td>${index + 1}</td>
@@ -91,6 +84,7 @@ function renderTable(data) {
         <td>${a.mobile || ''}</td>
         <td>${a.organisation || ''}</td>
         <td>${a.designation || ''}</td>
+        <td>${a.location || ''}</td>
         <td>${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ''}</td>
       </tr>`;
     tableBody.insertAdjacentHTML("beforeend", row);
