@@ -21,13 +21,10 @@
     <!-- Navigation links -->
     <nav>
       <ul class="nav-links" id="nav-links">
-        <li><a href="index.html">Home</a></li>
         <li><a href="fetchAlumniData.html">Alumni</a></li>
         <li><a href="#">Media</a></li>
         <li><a href="#">Articles</a></li>
         <li><a href="#">Notices</a></li>
-        <li><a href="#">Account</a></li>
-        <li><a href="#">Contact</a></li>
         <li><li><button class="btn-primary open-login">Login</button></li></li>
         
          <button class="btn-primary open-modal">Register Here</button>
@@ -37,7 +34,7 @@
 
   <!-- HERO SECTION -->
   <section class="hero">
-    <h1><u>JNV Jamui Alumni Association</u></h1>
+    <h1 style="font-family: 'Times New Roman', Times, serif;"><u>JNV Jamui Alumni Association</u></h1>
     <img src="img/jnvjamui.jpg" 
            alt="Hero Banner" 
            class="hero-image">
@@ -46,7 +43,7 @@
   <!-- MAIN CONTENT -->
   <section class="cards">
     <div class="card">
-        <h1><u>Online Alumni Network of JNV Jamui</u> </h1>
+        <h2><u>Online Alumni Network of JNV Jamui</u> </h2>
         <h3>Welcome to the official website of JNV Jamui Alumni Association.</h3>
         <p>Our alumni association, affiliated with Jawahar Navodaya Vidyalaya Jamui, is dedicated to enhancing the alumni 
             experience and fostering meaningful connections within the JNV community. Our primary goal is to create a robust 
@@ -57,13 +54,13 @@
            into the power of your alumni membership.</p>
     </div>
    <div class="card">
-        <h1>About us</h1>
+        <h2>About us</h2>
         <p>Our members comprise alumni from Jawahar Navodaya Vidyalaya Jamui (Bihar), and we stay closely connected through
              various social networking platforms, especially Facebook. The association is led by dedicated seniors and active
               members who ensure its smooth functioning both online and through school-level activities, including our Annual
                Alumni Meet.</p>
     </div> <div class="card">
-        <h1>What we do?</h1>
+        <h2>What we do?</h2>
         <ul>
         <li>Career Counselling and Academic Support: We provide valuable career guidance and academic advice to current students
              and fellow alumni of JNV Jamui.</li>
@@ -76,13 +73,7 @@
         <p>Join us in making a difference and strengthening the bonds that tie us together as proud members of the JNV Jamui
              family. Together, we can achieve greatness and support the growth of our alma mater.</p>
     </div>
-    <div id="alumni"  class="card">
-        <h1>Alumni Registration Form</h1>
-        <p>Login to Alumni Portal to Manage your profile and access Alumni membership benefits.
-             This portal is fully developed, managed and owned by JNV Jamui Alumni Association.</p>
-    
-       
-    </div>
+ 
     
   </section>
 
@@ -90,7 +81,7 @@
 <div id="contact-modal" class="modal">
   <div class="modal-content">
     <span class="close">&times;</span>
-    <h2>Update Your Profile</h2>
+    <h2 style="text-align: center;">Register Yourself</h2>
     <form id="registrationForm" action="#" method="POST">
       <label for="name">Name:</label>
         <input type="text" id="name" required><br><br>
@@ -166,6 +157,7 @@
      
         <label for="email">Email:</label>
         <input type="email" id="email" required><br><br>
+        <input type="password" id="password" required><br><br>
 
         <label for="mobile">Mobile No.:</label>
         <input type="text" id="mobile" required><br><br>
@@ -215,7 +207,8 @@
 
     <!-- TOGGLE LINKS -->
     <p>
-      <a href="#" id="show-signup">Create an account</a> |
+       <!-- <a href="#" id="show-signup">Create an account</a> | -->
+      
       <a href="#" id="show-login" style="display:none;">Already have an account?</a>
     </p>
   </div>

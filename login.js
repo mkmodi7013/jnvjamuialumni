@@ -1,12 +1,19 @@
-// Import Firebase modules
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { 
-  getAuth, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword 
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// complete main.js / login.js file
+// Handles:
+// 1. Firebase Login
+// 2. Auto open registration modal after 10 sec if user not registered
+// 3. Prevents null innerHTML error
+// 4. Fix for 400 Bad Request by validating inputs
 
-// ✅ Your Firebase Configuration (replace with your project values)
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+
+// ================= FIREBASE CONFIG =================
+// 🔥 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
   authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
@@ -17,79 +24,82 @@ const firebaseConfig = {
   appId: "1:412877503961:web:8cfc88edcc694a43b9edc8",
   measurementId: "G-D59BC7Q6JE"
 };
-
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// ---------------- LOGIN ----------------
-const loginForm = document.getElementById("loginForm");
-const signupForm = document.getElementById("signupForm");
-const msg = document.getElementById("auth-message");
+// ================= DOM READY =================
+document.addEventListener("DOMContentLoaded", () => {
 
-loginForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
+  const loginForm = document.getElementById("loginForm");
+  const registrationModal = document.getElementById("registration-modal");
+  const profileContainer = document.getElementById("profileContainer");
 
-  signInWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      msg.style.color = "green";
-      msg.textContent = "Login successful!";
-   window.location.href = "myprofile.html";
+  // ================= SAFE CHECK =================
+  function safeSetHTML(element, html) {
+    if (element) {
+      element.innerHTML = html;
+    } else {
+      console.warn("Element not found in DOM");
+    }
+  }
+
+  // ================= AUTO REGISTRATION MODAL =================
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
       setTimeout(() => {
-        document.getElementById("login-modal").style.display = "none";
-      }, 1000);
-    })
-    .catch((error) => {
-      msg.style.color = "red";
-      msg.textContent = error.message;
+        if (registrationModal) {
+          registrationModal.style.display = "flex";
+        }
+      }, 10000);
+
+      safeSetHTML(profileContainer,
+        `<p>You are not logged in. Please <span style='color:blue;cursor:pointer' onclick='openLogin()'>Login</span> first.</p>`
+      );
+    }
+  });
+
+  // ================= LOGIN FUNCTION =================
+  if (loginForm) {
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("login-email").value.trim();
+      const password = document.getElementById("login-password").value.trim();
+
+      if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          alert("Login Success:", userCredential.user);
+           window.location.href = "myprofile.html";
+          if (registrationModal) registrationModal.style.display = "none";
+        })
+        .catch((error) => {
+          console.error("Login Error:", error.message);
+          alert("Invalid email or password");
+        });
     });
+  }
 });
 
-// ---------------- SIGNUP ----------------
-signupForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  const name = document.getElementById("signup-name").value;
-  const email = document.getElementById("signup-email").value;
-  const password = document.getElementById("signup-password").value;
+// ================= OPEN LOGIN FUNCTION =================
+window.openLogin = function () {
+  const loginModal = document.getElementById("login-modal");
+  if (loginModal) {
+    loginModal.style.display = "flex";
+  }
+};
 
-  createUserWithEmailAndPassword(auth, email, password)
-    .then(() => {
-      msg.style.color = "green";
-      msg.textContent = "Account created successfully! You can now log in.";
-      signupForm.style.display = "none";
-      loginForm.style.display = "block";
-      document.getElementById("modal-title").textContent = "Login to Alumni Portal";
-      document.getElementById("show-signup").style.display = "inline";
-      document.getElementById("show-login").style.display = "none";
-    })
-    .catch((error) => {
-      msg.style.color = "red";
-      msg.textContent = error.message;
-    });
-});
-
-// ---------------- TOGGLE BETWEEN LOGIN/SIGNUP ----------------
-const showSignup = document.getElementById("show-signup");
-const showLogin = document.getElementById("show-login");
-
-showSignup.addEventListener("click", (e) => {
-  e.preventDefault();
-  loginForm.style.display = "none";
-  signupForm.style.display = "block";
-  document.getElementById("modal-title").textContent = "Create an Account";
-  showSignup.style.display = "none";
-  showLogin.style.display = "inline";
-  msg.textContent = "";
-});
-
-showLogin.addEventListener("click", (e) => {
-  e.preventDefault();
-  signupForm.style.display = "none";
-  loginForm.style.display = "block";
-  document.getElementById("modal-title").textContent = "Login to Alumni Portal";
-  showSignup.style.display = "inline";
-  showLogin.style.display = "none";
-  msg.textContent = "";
-});
+// ================= IMPORTANT NOTES =================
+// 1. Replace YOUR_API_KEY etc with your Firebase config
+// 2. Ensure ids exist in HTML:
+//    - loginForm
+//    - login-email
+//    - login-password
+//    - registration-modal
+//    - profileContainer
+//    - login-modal
+// 3. Fix 400 error is usually caused by wrong email/password or disabled auth method in Firebase console
