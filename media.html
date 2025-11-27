@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload Album to Firestore</title>
+
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      background:#eef2f5;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      margin:0;
+    }
+
+    .container{
+      background:#fff;
+      padding:30px;
+      border-radius:10px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+      width:420px;
+      text-align:center;
+    }
+
+    h2{
+      margin-bottom:20px;
+      color:#333;
+    }
+
+    input{
+      width:100%;
+      padding:10px;
+      font-size:15px;
+      margin-bottom:15px;
+      border:1px solid #ccc;
+      border-radius:5px;
+    }
+
+    button{
+      padding:10px 20px;
+      background:#f53e06;
+      color:white;
+      border:none;
+      border-radius:5px;
+      cursor:pointer;
+      font-size:16px;
+    }
+
+    button:hover{
+      background:#b6401c;
+    }
+
+    #msg{
+      margin-top:15px;
+      font-size:14px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Upload Alumni photos Album</h2>
+
+  <input type="text" id="albumKey" placeholder="enter album name(ex. jnv jamui Alumni 2025)">
+  <input type="text" id="albumLink" placeholder="Paste Google Drive Album Link">
+
+  <button onclick="uploadAlbum()">Save</button>
+  <p id="msg"></p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// 🔥 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
+  projectId: "jnvjamuialumni-edceb",
+  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+  messagingSenderId: "412877503961",
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8",
+  measurementId: "G-D59BC7Q6JE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.uploadAlbum = async function(){
+  const key = document.getElementById("albumKey").value.trim();
+  const link = document.getElementById("albumLink").value.trim();
+  const msg = document.getElementById("msg");
+
+  if(key === "" || link === ""){
+    msg.style.color = "red";
+    msg.innerText = "❗ Please enter both Album Key and Link";
+    return;
+  }
+
+  msg.style.color = "black";
+  msg.innerText = "Saving...";
+
+  try{
+    await setDoc(doc(db, "media", key), {
+      albumLink: link,
+      createdAt: serverTimestamp()
+    });
+
+    msg.style.color = "green";
+    msg.innerText = "✅ Album link saved successfully!";
+    document.getElementById("albumKey").value = "";
+    document.getElementById("albumLink").value = "";
+
+  } catch(error){
+    console.error(error);
+    msg.style.color = "red";
+    msg.innerText = "❌ Error saving data";
+  }
+}
+</script>
+
+</body>
+</html>

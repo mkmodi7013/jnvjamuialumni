@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Articles</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background: #27b7e7;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background: #1a9cc7;
+    }
+    .article {
+      border-bottom: 1px solid #ddd;
+      padding: 15px 0;
+    }
+    .article h3 {
+      margin: 0 0 5px;
+    }
+    .article p {
+      margin: 5px 0;
+    }
+    .user-info {
+      font-size: 14px;
+      color: #555;
+    }
+    #filterInput {
+      display: block;
+      margin: 20px auto;
+      padding: 10px;
+      width: 300px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    #loggedUserInfo {
+      margin-bottom: 15px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Submit Your Article</h2>
+  <div id="loggedUserInfo">Fetching user info...</div>
+  <textarea id="articleTitle" rows="2" placeholder="Article Title"></textarea>
+  <textarea id="articleContent" rows="5" placeholder="Write your article here..."></textarea>
+  <button id="submitBtn" disabled>Submit Article</button>
+  <p id="msg"></p>
+
+  <h2>All Articles</h2>
+  <input type="text" id="filterInput" placeholder="Filter by Name">
+  <div id="articlesContainer"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+  projectId: "jnvjamuialumni-edceb",
+  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+  messagingSenderId: "412877503961",
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const dbRealtime = getDatabase(app);
+const auth = getAuth(app);
+const articlesContainer = document.getElementById('articlesContainer');
+const msg = document.getElementById('msg');
+const submitBtn = document.getElementById('submitBtn');
+const loggedUserInfoDiv = document.getElementById('loggedUserInfo');
+let articlesData = [];
+let loggedUserInfo = null;
+
+async function fetchLoggedUserInfo(userId){
+  try {
+    // Realtime Database node is now 'alumni'
+    const userRef = ref(dbRealtime, `alumni/${userId}`);
+    const snapshot = await get(userRef);
+    if(snapshot.exists()){
+      return snapshot.val(); // expects {name, entryYear, exitYear}
+    } else {
+      return null;
+    }
+  } catch(error){
+    console.error(error);
+    return null;
+  }
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if(user){
+    loggedUserInfo = await fetchLoggedUserInfo(user.uid);
+    if(loggedUserInfo){
+      loggedUserInfoDiv.innerText = `Logged in as: ${loggedUserInfo.name} (Entry: ${loggedUserInfo.entryYear} - Exit: ${loggedUserInfo.exitYear})`;
+      submitBtn.disabled = false;
+    } else {
+      loggedUserInfoDiv.innerText = 'User info not found in Realtime Database';
+      submitBtn.disabled = true;
+    }
+  } else {
+    loggedUserInfoDiv.innerText = 'You must be logged in to submit articles';
+    submitBtn.disabled = true;
+  }
+});
+
+window.submitArticle = async function(){
+  if(!loggedUserInfo){
+    msg.style.color = 'red';
+    msg.innerText = '❌ Cannot submit, user not logged in';
+    return;
+  }
+
+  const title = document.getElementById('articleTitle').value.trim();
+  const content = document.getElementById('articleContent').value.trim();
+
+  if(!title || !content){
+    msg.style.color = 'red';
+    msg.innerText = '❗ Please fill all fields';
+    return;
+  }
+
+  try{
+    await addDoc(collection(db, 'articles'), {
+      userName: loggedUserInfo.name,
+      entryYear: loggedUserInfo.entryYear,
+      exitYear: loggedUserInfo.exitYear,
+      title: title,
+      content: content,
+      createdAt: serverTimestamp()
+    });
+
+    msg.style.color = 'green';
+    msg.innerText = '✅ Article submitted successfully!';
+    document.getElementById('articleTitle').value = '';
+    document.getElementById('articleContent').value = '';
+
+    loadArticles();
+  } catch(error){
+    console.error(error);
+    msg.style.color = 'red';
+    msg.innerText = '❌ Error submitting article';
+  }
+}
+
+async function loadArticles(){
+  articlesContainer.innerHTML = 'Loading articles...';
+  try{
+    const querySnapshot = await getDocs(collection(db, 'articles'));
+    articlesData = [];
+    articlesContainer.innerHTML = '';
+
+    if(querySnapshot.empty){
+      articlesContainer.innerHTML = 'No articles found';
+      return;
+    }
+
+    querySnapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      articlesData.push(data);
+    });
+
+    displayArticles(articlesData);
+
+  } catch(error){
+    console.error(error);
+    articlesContainer.innerHTML = 'Error loading articles';
+  }
+}
+
+function displayArticles(data){
+  articlesContainer.innerHTML = '';
+  if(data.length === 0){
+    articlesContainer.innerHTML = 'No articles found';
+    return;
+  }
+
+  data.forEach(data => {
+    const articleDiv = document.createElement('div');
+    articleDiv.className = 'article';
+    articleDiv.innerHTML = `
+      <h3>${data.title}</h3>
+      <p>${data.content}</p>
+      <p class='user-info'>By: ${data.userName} (Entry: ${data.entryYear} - Exit: ${data.exitYear})</p>
+    `;
+    articlesContainer.appendChild(articleDiv);
+  });
+}
+
+document.getElementById('filterInput').addEventListener('input', (e) => {
+  const value = e.target.value.toLowerCase();
+  const filtered = articlesData.filter(a => a.userName.toLowerCase().includes(value));
+  displayArticles(filtered);
+});
+
+loadArticles();
+</script>
+
+</body>
+</html>
