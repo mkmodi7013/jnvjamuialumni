@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Insert Event - Admin</title>
+  <link rel="stylesheet" href="event_insert.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>Insert / Update Event</h1>
+
+  <form id="insertEventForm">
+    <input type="text" id="title" placeholder="Event Title" required>
+    <input type="text" id="shortDesc" placeholder="Short Description" required>
+    <input type="date" id="date" required>
+    <input type="text" id="time" placeholder="Event Time" required>
+    <input type="text" id="venue" placeholder="Venue" required>
+
+    <textarea id="description" placeholder="Full Event Description" rows="5" required></textarea>
+
+    <button type="submit">Save Event</button>
+  </form>
+
+  <p class="note">This will update Firestore event data</p>
+</div>
+
+<script type="module" src="event_insert.js"></script>
+</body>
+</html>

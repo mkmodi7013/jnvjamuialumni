@@ -14,6 +14,7 @@ body {
 
 /* HEADER */
 header {
+ 
   background: #f72905;
   color: white;
   display: flex;
@@ -26,6 +27,8 @@ header {
   width: 100%;             /* ✅ Ensures header spans full width */
   z-index: 1000;
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  
+   
 }
 
 
@@ -50,6 +53,11 @@ header {
   font-weight: 500;
   
 }
+nav a:hover{
+  color: #5cc9ee;
+  background: rgba(238, 242, 243, 0.1);
+  border-radius: 6px;
+}
 
 
 /* HAMBURGER ICON */
@@ -58,7 +66,19 @@ header {
   font-size: 1.8rem;
   cursor: pointer;
 }
+/* Section wrapper */
+.section{
+text-align: center; 
+  margin-top: 100px;
+  color:#f72905;
+   font-size: clamp(18px, 3vw, 32px);
+}
 
+/* Heading */
+.section-heading{
+  
+
+}
 /* HERO SECTION */
 .hero {
   text-align: center;
@@ -280,6 +300,105 @@ button {
 button:hover {
   background: pink;
 }
+.row{
+ 
+  display: flex;
+  width: 100%;
+  
+   gap: 20px;
+ 
+}
+
+/* Desktop view */
+.left, .right{
+  width: 25%;
+  border: 2px, solid, #f72905;
+   height: 250px;
+}
+
+.left{
+   margin-left: 30px;
+  overflow: hidden;
+ 
+}
+
+.news-slider{
+  background-color: whitesmoke;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 20s linear infinite;
+}
+
+.news-item{
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.news-item h4{
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.news-item p{
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* ✅ Auto vertical scroll animation */
+@keyframes slideUp{
+  0%{ transform: translateY(0); }
+  100%{ transform: translateY(-100%); }
+}
+
+.right{
+  margin-right: 30px;
+}
+
+.middle{
+  width: 50%;
+   background-image: url(img/jnvjamui.jpg);
+   background-size: cover;       /* image full cover kare */
+  background-position: center;  /* center me rahe */
+  background-repeat: no-repeat;
+  min-height: 250px; 
+ 
+}
+
+/* Basic styling */
+.box{
+  padding: 20px;
+  border: 1px solid #ccc;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+/* Mobile view */
+@media(max-width:768px){
+  .row{
+    flex-direction: column;
+  }
+
+  .left, .middle, .right{
+    width:100%;
+  }
+
+  /* ✅ Order change */
+  .middle{
+    order: 1;   /* sabse upar */
+  }
+
+  .left{
+    order: 2;
+    margin-left: 0;
+  }
+
+  .right{
+    order: 3;
+    margin-right: 0;
+  }
+}
+
 
 
   

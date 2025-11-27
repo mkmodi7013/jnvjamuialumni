@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, child, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
   authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
@@ -13,121 +12,122 @@ const firebaseConfig = {
   measurementId: "G-D59BC7Q6JE"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const dbRef = ref(db);
 
-// Elements
-const tableBody = document.querySelector("#alumniTable tbody");
 let alumniData = {};
 
-// Fetch and display data
 async function fetchAlumni() {
-  tableBody.innerHTML = `<tr><td colspan="14">Loading...</td></tr>`;
+  const tableBody = document.querySelector("#alumniTable tbody");
+  tableBody.innerHTML = `<tr><td class="loading" colspan="16">Loading...</td></tr>`;
+
   try {
-    const snapshot = await get(child(dbRef, "alumni"));
+    const snapshot = await get(child(ref(db), "alumni"));
     if (snapshot.exists()) {
       alumniData = snapshot.val();
-      renderTable();
+      populateFilters(alumniData);
+      renderTable(alumniData);
     } else {
-      tableBody.innerHTML = `<tr><td colspan="14">No data found.</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="16" class="loading">No alumni found.</td></tr>`;
     }
-  } catch (err) {
-    console.error(err);
-    tableBody.innerHTML = `<tr><td colspan="14">Error loading data.</td></tr>`;
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    tableBody.innerHTML = `<tr><td colspan="16" class="loading">Error loading data.</td></tr>`;
   }
 }
 
-function renderTable() {
+function populateFilters(data) {
+  const genders = new Set();
+  const profiles = new Set();
+  const entryYears = new Set();
+
+  Object.values(data).forEach(a => {
+    if (a.gender) genders.add(a.gender);
+    if (a.profile) profiles.add(a.profile);
+    if (a.entryyear) entryYears.add(a.entryyear);
+  });
+
+  const genderFilter = document.getElementById("genderFilter");
+  const profileFilter = document.getElementById("profileFilter");
+  const entryYearFilter = document.getElementById("entryYearFilter");
+
+  genders.forEach(g => genderFilter.insertAdjacentHTML('beforeend', `<option value="${g}">${g}</option>`));
+  profiles.forEach(p => profileFilter.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
+  entryYears.forEach(y => entryYearFilter.insertAdjacentHTML('beforeend', `<option value="${y}">${y}</option>`));
+}
+
+function renderTable(data) {
+  const tableBody = document.querySelector("#alumniTable tbody");
   tableBody.innerHTML = "";
-  const keys = Object.keys(alumniData);
-  if (!keys.length) {
-    tableBody.innerHTML = `<tr><td colspan="14">No records.</td></tr>`;
+  const keys = Object.keys(data);
+
+  if (keys.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="16" class="loading">No records found.</td></tr>`;
     return;
   }
 
   keys.forEach((key, index) => {
-    const a = alumniData[key];
-    tableBody.insertAdjacentHTML("beforeend", `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${key}</td>
-        <td>${a.name || ''}</td>
-        <td>${a.gender || ''}</td>
-        <td>${a.profile || ''}</td>
-        <td>${a.entryclass || ''}</td>
-        <td>${a.exitclass || ''}</td>
-        <td>${a.entryyear || ''}</td>
-        <td>${a.exityear || ''}</td>
-        <td>${a.email || ''}</td>
-        <td>${a.mobile || ''}</td>
-        <td>${a.organisation || ''}</td>
-        <td>${a.designation || ''}</td>
-        <td>${a.submittedAt || ''}</td>
-        <td>
-          <button class="update-btn" data-key="${key}">Update</button>
-        </td>
-      </tr>
-    `);
+    const a = data[key];
+
+    const row = `
+    <tr>
+      <td>${index + 1}</td>
+      <td>${key}</td>
+      <td>${a.name || ''}</td>
+      <td>${a.gender || ''}</td>
+      <td>${a.profile || ''}</td>
+      <td>${a.entryclass || ''}</td>
+      <td>${a.exitclass || ''}</td>
+      <td>${a.entryyear || ''}</td>
+      <td>${a.exityear || ''}</td>
+      <td>${a.email || ''}</td>
+      <td>${a.mobile || ''}</td>
+      <td>${a.organisation || ''}</td>
+      <td>${a.designation || ''}</td>
+      <td>${a.location || 'N/A'}</td>
+      <td>${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ''}</td>
+      <td>
+        <button class="update-btn" data-key="${key}">Update</button>
+        <button class="delete-btn" data-key="${key}">Delete</button>
+      </td>
+    </tr>`;
+    
+    tableBody.insertAdjacentHTML("beforeend", row);
   });
 
-  // ✅ Only Update functionality remains
+  attachActionEvents();
+}
+import { set, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+function attachActionEvents() {
+  // UPDATE
   document.querySelectorAll(".update-btn").forEach(btn => {
-    btn.addEventListener("click", () => openUpdateModal(btn.dataset.key));
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key;
+      const record = alumniData[key];
+
+      const newLocation = prompt("Update Location:", record.location || "");
+      if (newLocation !== null) {
+        record.location = newLocation;
+        set(ref(db, "alumni/" + key), record).then(() => {
+          alert("Record Updated ✅");
+          fetchAlumni();
+        });
+      }
+    });
+  });
+
+  // DELETE
+  document.querySelectorAll(".delete-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key;
+
+      if (confirm("Are you sure to delete this record?")) {
+        remove(ref(db, "alumni/" + key)).then(() => {
+          alert("Record Deleted ✅");
+          fetchAlumni();
+        });
+      }
+    });
   });
 }
-
-// Modal Elements
-const updateModal = document.getElementById("updateModal");
-const closeModal = document.querySelector(".close");
-const updateForm = document.getElementById("updateForm");
-
-// Open modal with data
-function openUpdateModal(key) {
-  const data = alumniData[key];
-  if (!data) return;
-  document.getElementById("updateKey").value = key;
-  document.getElementById("updateName").value = data.name || "";
-  document.getElementById("updateGender").value = data.gender || "";
-  document.getElementById("updateProfile").value = data.profile || "";
-  document.getElementById("updateEntryClass").value = data.entryclass || "";
-  document.getElementById("updateExitClass").value = data.exitclass || "";
-  document.getElementById("updateEntryYear").value = data.entryyear || "";
-  document.getElementById("updateExitYear").value = data.exityear || "";
-  document.getElementById("updateEmail").value = data.email || "";
-  document.getElementById("updateMobile").value = data.mobile || "";
-  document.getElementById("updateOrganisation").value = data.organisation || "";
-  document.getElementById("updateDesignation").value = data.designation || "";
-  updateModal.style.display = "block";
-}
-
-// Close modal
-closeModal.addEventListener("click", () => updateModal.style.display = "none");
-window.addEventListener("click", e => { if(e.target==updateModal) updateModal.style.display="none"; });
-
-// Handle update form submit
-updateForm.addEventListener("submit", async e => {
-  e.preventDefault();
-  const key = document.getElementById("updateKey").value;
-  const updatedData = {
-    ...alumniData[key],
-    name: document.getElementById("updateName").value,
-    gender: document.getElementById("updateGender").value,
-    profile: document.getElementById("updateProfile").value,
-    entryclass: document.getElementById("updateEntryClass").value,
-    exitclass: document.getElementById("updateExitClass").value,
-    entryyear: document.getElementById("updateEntryYear").value,
-    exityear: document.getElementById("updateExitYear").value,
-    email: document.getElementById("updateEmail").value,
-    mobile: document.getElementById("updateMobile").value,
-    organisation: document.getElementById("updateOrganisation").value,
-    designation: document.getElementById("updateDesignation").value
-  };
-  await set(ref(db, "alumni/" + key), updatedData);
-  updateModal.style.display = "none";
-  fetchAlumni();
-});
-
-// Initial fetch
-window.addEventListener("load", fetchAlumni);
