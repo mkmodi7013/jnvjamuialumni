@@ -1,44 +1,105 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phone Login | JNV Jamui Alumni</title>
-  <link rel="stylesheet" href="login.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-box {
+      background: #fff;
+      padding: 25px;
+      width: 320px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .login-box h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      border: none;
+      color: #fff;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
+
 </head>
 <body>
 
-  <div class="login-container">
-    <h2>📱 Alumni Login</h2>
+  <div class="login-box">
+    <h2>Login</h2>
 
-    <!-- Phone Input -->
-    <div id="loginSection">
-      <div class="phone-input">
-        <select id="countryCode">
-          <option value="+91" selected>🇮🇳 +91</option>
-          <option value="+1">🇺🇸 +1</option>
-          <option value="+44">🇬🇧 +44</option>
-          <option value="+61">🇦🇺 +61</option>
-          <option value="+971">🇦🇪 +971</option>
-        </select>
-        <input type="text" id="phoneNumber" placeholder="Enter phone number" />
-      </div>
-
-      <div id="recaptcha-container"></div>
-      <button id="sendOtpBtn">Send OTP</button>
-      <div id="recaptcha-container"></div>
-
-    </div>
-
-    <!-- OTP Verification -->
-    <div id="verifySection" style="display: none;">
-      <input type="text" id="otpCode" placeholder="Enter OTP" />
-      <button id="verifyOtpBtn">Verify OTP</button>
-    </div>
-
-    <p id="statusMessage"></p>
+    <input type="email" id="email" placeholder="Enter email" />
+    <input type="password" id="password" placeholder="Enter password" />
+    <button id="loginBtn">Login</button>
   </div>
 
-  <script type="module" src="login.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+// 🔥 Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
+  projectId: "jnvjamuialumni-edceb",
+  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+  messagingSenderId: "412877503961",
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      if (email === "" || password === "") {
+        alert("Please fill all fields");
+        return;
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          alert("Login Successful!");
+          window.location.href = "index.html";
+        })
+        .catch((error) => {
+          alert("Error: " + error.message);
+        });
+    });
+  </script>
+
 </body>
 </html>

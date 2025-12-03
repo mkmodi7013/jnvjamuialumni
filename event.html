@@ -18,25 +18,39 @@
 <div class="event-container">
   <div class="event-info">
 
-    <div class="event-details">
-      <h2>Event Details</h2>
-      <div class="event-meta">
-        <span>📅 Date:</span> <span id="eventDate"></span>
-        <span>⏰ Time:</span> <span id="eventTime"></span>
-        <span>📍 Venue:</span> <span id="eventVenue"></span>
-      </div>
-      <p id="eventDescription"></p>
-    </div>
-
     <div class="event-register">
       <h3>Register for Event</h3>
+
+      <!-- Registration Form -->
       <form id="eventForm">
+
+        <!-- EVENT DETAILS INSIDE FORM -->
+        <div class="event-details-box">
+          <h4>Event Details</h4>
+
+          <p><strong>📅 Date:</strong> <span id="eventDate"></span></p>
+          <p><strong>⏰ Time:</strong> <span id="eventTime"></span></p>
+          <p><strong>📍 Venue:</strong> <span id="eventVenue"></span></p>
+          <p id="eventDescription"></p>
+
+          <!-- Hidden Inputs (To save event details in Firestore if required) -->
+          <input type="hidden" id="eventTitleHidden">
+          <input type="hidden" id="eventDateHidden">
+          <input type="hidden" id="eventTimeHidden">
+          <input type="hidden" id="eventVenueHidden">
+        </div>
+
+        <!-- USER INPUTS -->
         <input type="text" id="name" placeholder="Your Name" required>
         <input type="email" id="email" placeholder="Email Address" required>
         <input type="tel" id="mobile" placeholder="Mobile Number" required>
+
         <button type="submit">Register Now</button>
-        <button type="submit" ><a href="index.html"  style="color: white; text-decoration: none;">Back to HOME Page</a></button>
       </form>
+
+      <button onclick="window.location.href='index.html'" style="margin-top:10px;">
+        Back to HOME Page
+      </button>
     </div>
 
   </div>

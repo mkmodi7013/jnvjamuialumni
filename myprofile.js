@@ -127,7 +127,7 @@ onAuthStateChanged(auth, (user) => {
         profileContainer.innerHTML = `<p>Error loading data.</p>`;
       });
   } else {
-    profileContainer.innerHTML = `<p>You are not logged in. Please <a href="index.html">login</a> first.</p>`;
+    profileContainer.innerHTML = `<p>You are not logged in. Please <a href="login.html">login</a> first.</p>`;
   }
 });
 

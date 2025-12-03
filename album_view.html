@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Albums</title>
+
+<style>
+  body { font-family: Arial; background:#eef2f5; margin:0; padding:20px; }
+
+  .container { max-width:900px; margin:auto; background:#fff; padding:20px; border-radius:10px;
+               box-shadow:0 5px 15px rgba(0,0,0,0.2); }
+
+  h2 { text-align:center; }
+
+  #searchBar {
+    width:100%; padding:12px; border-radius:6px; border:1px solid #ccc;
+    font-size:16px; margin-bottom:20px;
+  }
+
+  .folder-grid {
+    display:flex; flex-wrap:wrap; gap:15px; justify-content:center;
+  }
+
+  .folder {
+    width:140px; height:140px; background:#f4f4f4; border-radius:10px;
+    border:2px solid #ddd; display:flex; flex-direction:column;
+    justify-content:center; align-items:center; cursor:pointer;
+    transition:0.2s;
+  }
+
+  .folder:hover { background:#ffe5d9; border-color:#f53e06; }
+
+  .folder-icon { font-size:40px; color:#f53e06; margin-bottom:10px; }
+
+  .photo-grid {
+    display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:20px;
+  }
+
+  .thumb {
+    width:120px; height:120px; object-fit:cover; border-radius:6px;
+    border:1px solid #ccc; cursor:pointer;
+  }
+
+  #backBtn {
+    padding:10px 15px; background:#f53e06; color:#fff; border:none;
+    border-radius:6px; cursor:pointer; margin-bottom:15px;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <h2>Alumni Albums</h2>
+
+  <input type="text" id="searchBar" placeholder="Search Album..." onkeyup="filterAlbums()">
+
+  <div id="folderList" class="folder-grid"></div>
+
+  <div id="photoSection" style="display:none;">
+    <button id="backBtn" onclick="goBack()">⬅ Back to Albums</button>
+    <h3 id="albumTitle"></h3>
+    <div id="photoGrid" class="photo-grid"></div>
+  </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA6izuR2_oyHbAVhkIVkH0OHj6yAOduD_8",
+  authDomain: "apna-kitchen-acdcc.firebaseapp.com",
+  projectId: "apna-kitchen-acdcc",
+  storageBucket: "apna-kitchen-acdcc.appspot.com",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const folderList = document.getElementById("folderList");
+const photoSection = document.getElementById("photoSection");
+const photoGrid = document.getElementById("photoGrid");
+const albumTitle = document.getElementById("albumTitle");
+
+// Load albums
+window.onload = async function () {
+  const querySnapshot = await getDocs(collection(db, "JnvJamuiAlumniAlbums"));
+
+  querySnapshot.forEach((docSnap) => {
+    const albumName = docSnap.id;
+
+    const folder = document.createElement("div");
+    folder.classList.add("folder");
+    folder.setAttribute("data-name", albumName);
+    folder.onclick = () => openAlbum(albumName);
+
+    folder.innerHTML = `
+      <div class="folder-icon">📁</div>
+      <div>${albumName}</div>
+    `;
+
+    folderList.appendChild(folder);
+  });
+};
+
+// Open album photos
+window.openAlbum = async function (albumName) {
+  folderList.style.display = "none";
+  photoSection.style.display = "block";
+  albumTitle.innerText = albumName;
+
+  photoGrid.innerHTML = "";
+
+  const docSnap = await getDoc(doc(db, "JnvJamuiAlumniAlbums", albumName));
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+
+    if (data.images) {
+      data.images.forEach(url => {
+        const img = document.createElement("img");
+        img.src = url;
+        img.classList.add("thumb");
+
+        // 👉 CLICK TO OPEN FULL PAGE
+        img.onclick = () => {
+          window.location.href = "photo_view.html?src=" + encodeURIComponent(url);
+        };
+
+        photoGrid.appendChild(img);
+      });
+    }
+  }
+};
+
+// Back button
+window.goBack = function () {
+  photoSection.style.display = "none";
+  folderList.style.display = "flex";
+};
+
+// Search filter
+window.filterAlbums = function () {
+  const filter = document.getElementById("searchBar").value.toLowerCase();
+  const folders = document.querySelectorAll(".folder");
+
+  folders.forEach(folder => {
+    const name = folder.getAttribute("data-name").toLowerCase();
+    folder.style.display = name.includes(filter) ? "flex" : "none";
+  });
+};
+</script>
+
+</body>
+</html>

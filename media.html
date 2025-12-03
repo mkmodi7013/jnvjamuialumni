@@ -1,125 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Album to Firestore</title>
-
-  <style>
-    body{
-      font-family: Arial, sans-serif;
-      background:#eef2f5;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-      margin:0;
-    }
-
-    .container{
-      background:#fff;
-      padding:30px;
-      border-radius:10px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.2);
-      width:420px;
-      text-align:center;
-    }
-
-    h2{
-      margin-bottom:20px;
-      color:#333;
-    }
-
-    input{
-      width:100%;
-      padding:10px;
-      font-size:15px;
-      margin-bottom:15px;
-      border:1px solid #ccc;
-      border-radius:5px;
-    }
-
-    button{
-      padding:10px 20px;
-      background:#f53e06;
-      color:white;
-      border:none;
-      border-radius:5px;
-      cursor:pointer;
-      font-size:16px;
-    }
-
-    button:hover{
-      background:#b6401c;
-    }
-
-    #msg{
-      margin-top:15px;
-      font-size:14px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alumni Album Upload</title>
+<style>
+  body { font-family: Arial; background:#eef2f5; padding:20px; margin:0; }
+  .container { max-width:700px; margin:auto; background:#fff; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,0.2); text-align:center; }
+  input, button { width:100%; padding:12px; margin-bottom:15px; border-radius:5px; border:1px solid #ccc; font-size:15px; }
+  button { background:#f53e06; color:#fff; border:none; cursor:pointer; }
+  button:hover { background:#b6401c; }
+  #msg { font-size:14px; margin-top:10px; }
+  #preview { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-bottom:15px; }
+  .thumb { width:80px; height:80px; object-fit:cover; border-radius:5px; border:1px solid #ccc; }
+  .progress-container { width:100%; background:#ddd; border-radius:5px; overflow:hidden; margin-bottom:10px; }
+  .progress-bar { height:15px; width:0; background:#4caf50; text-align:center; color:#fff; font-size:12px; transition: width 0.3s; }
+</style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Upload Alumni photos Album</h2>
+  <h2>Upload Alumni Album</h2>
 
-  <input type="text" id="albumKey" placeholder="enter album name(ex. jnv jamui Alumni 2025)">
-  <input type="text" id="albumLink" placeholder="Paste Google Drive Album Link">
+  <input type="text" id="albumName" placeholder="Enter Album Name(ex. jnv jamui alumni 2025)" required>
+  <input type="file" id="imageFiles" accept="image/*" multiple>
+  
+  <div id="preview"></div>
+  
+  <div class="progress-container">
+    <div class="progress-bar" id="progressBar">0%</div>
+  </div>
 
-  <button onclick="uploadAlbum()">Save</button>
+  <button onclick="uploadAlbum()">Upload Album</button>
+    <button onclick="openAlbumView()">📷 Show Alumni Album</button>
+
+
+<script>
+function openAlbumView() {
+  window.location.href = "album_view.html";   // opens the album viewer page
+}
+</script>
   <p id="msg"></p>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { getFirestore, doc, setDoc, serverTimestamp, arrayUnion } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// 🔥 Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
-  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
-  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
-  projectId: "jnvjamuialumni-edceb",
-  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
-  messagingSenderId: "412877503961",
-  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8",
-  measurementId: "G-D59BC7Q6JE"
+  apiKey: "AIzaSyA6izuR2_oyHbAVhkIVkH0OHj6yAOduD_8",
+  authDomain: "apna-kitchen-acdcc.firebaseapp.com",
+  databaseURL: "https://apna-kitchen-acdcc-default-rtdb.firebaseio.com",
+  projectId: "apna-kitchen-acdcc",
+  storageBucket: "apna-kitchen-acdcc.appspot.com",
+  messagingSenderId: "129562055761",
+  appId: "1:129562055761:web:baa01f9fea6f8eed025470",
+  measurementId: "G-Q29T9CW41D"
 };
 
 const app = initializeApp(firebaseConfig);
+const storage = getStorage(app);
 const db = getFirestore(app);
 
+const preview = document.getElementById("preview");
+const progressBar = document.getElementById("progressBar");
+
+// Show preview thumbnails
+document.getElementById("imageFiles").addEventListener("change", function() {
+  preview.innerHTML = "";
+  const files = this.files;
+  for(let i=0;i<files.length;i++){
+    const img = document.createElement("img");
+    img.classList.add("thumb");
+    img.src = URL.createObjectURL(files[i]);
+    preview.appendChild(img);
+  }
+});
+
+// Upload images only — No fetching
 window.uploadAlbum = async function(){
-  const key = document.getElementById("albumKey").value.trim();
-  const link = document.getElementById("albumLink").value.trim();
+  const albumName = document.getElementById("albumName").value.trim();
+  const files = document.getElementById("imageFiles").files;
   const msg = document.getElementById("msg");
 
-  if(key === "" || link === ""){
-    msg.style.color = "red";
-    msg.innerText = "❗ Please enter both Album Key and Link";
-    return;
-  }
+  if(!albumName){ msg.style.color="red"; msg.innerText="❗ Enter album name"; return; }
+  if(!files.length){ msg.style.color="red"; msg.innerText="❗ Select at least one image"; return; }
 
-  msg.style.color = "black";
-  msg.innerText = "Saving...";
+  msg.style.color="black";
+  msg.innerText="Uploading images...";
 
-  try{
-    await setDoc(doc(db, "media", key), {
-      albumLink: link,
-      createdAt: serverTimestamp()
+  const albumDocRef = doc(db, "JnvJamuiAlumniAlbums", albumName);
+  let uploaded = 0;
+
+  for(let i=0;i<files.length;i++){
+    const file = files[i];
+    const storageRef = ref(storage, `albums/${albumName}/${Date.now()}_${file.name}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+
+    await new Promise((resolve, reject)=>{
+      uploadTask.on('state_changed',
+        (snapshot)=>{
+          const progress = Math.round((snapshot.bytesTransferred/snapshot.totalBytes)*100);
+          progressBar.style.width = progress+"%";
+          progressBar.innerText = progress+"%";
+        },
+        (error)=>{
+          console.error(error);
+          reject(error);
+        },
+        async ()=>{
+          const url = await getDownloadURL(uploadTask.snapshot.ref);
+          await setDoc(albumDocRef, {
+            albumName,
+            images: arrayUnion(url),
+            createdAt: serverTimestamp()
+          }, {merge:true});
+          uploaded++;
+          resolve();
+        }
+      );
     });
-
-    msg.style.color = "green";
-    msg.innerText = "✅ Album link saved successfully!";
-    document.getElementById("albumKey").value = "";
-    document.getElementById("albumLink").value = "";
-
-  } catch(error){
-    console.error(error);
-    msg.style.color = "red";
-    msg.innerText = "❌ Error saving data";
   }
+
+  msg.style.color="green";
+  msg.innerText=`✅ Uploaded ${uploaded} image(s) successfully!`;
+
+  document.getElementById("albumName").value="";
+  document.getElementById("imageFiles").value="";
+  preview.innerHTML="";
+  progressBar.style.width="0%";
+  progressBar.innerText="0%";
 }
 </script>
 
