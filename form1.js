@@ -3,9 +3,6 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { 
   getDatabase, ref, set, get, child 
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { 
-  getAuth, createUserWithEmailAndPassword 
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // 🔥 Firebase Config
 const firebaseConfig = {
@@ -13,7 +10,7 @@ const firebaseConfig = {
   authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
   databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
   projectId: "jnvjamuialumni-edceb",
-  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+  storageBucket: "jnvjamuialumni-edceb.appspot.com",
   messagingSenderId: "412877503961",
   appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
 };
@@ -21,7 +18,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
 const dbRef = ref(db);
 
 // ================= AUTO OPEN MODAL =================
@@ -40,18 +36,16 @@ const form = document.getElementById("registrationForm");
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("mobile").value; // aap mobile ko password use kar rahe
+  const email = document.getElementById("email").value.trim();
 
   const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
-
   if (!emailPattern.test(email)) {
     alert("❌ Please enter a valid email address!");
     return;
   }
 
   try {
-    // ================= CHECK DUPLICATE EMAIL IN DB =================
+    // ================= CHECK DUPLICATE EMAIL =================
     const snapshot = await get(child(dbRef, "alumni"));
     let nextIndex = 1;
 
@@ -67,17 +61,10 @@ form.addEventListener("submit", async (e) => {
       nextIndex = Object.keys(allData).length + 1;
     }
 
-    // ================= CREATE USER IN FIREBASE AUTH =================
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-
-    console.log("Auth User Created:", user);
-
-    // ================= SAVE DATA IN REALTIME DATABASE =================
+    // ================= SAVE DATA =================
     const newKey = `jnvjamui${nextIndex}`;
 
     const alumniData = {
-      uid: user.uid,
       name: document.getElementById("name").value,
       gender: document.getElementById("gender").value,
       profile: document.getElementById("profile").value,
@@ -86,7 +73,6 @@ form.addEventListener("submit", async (e) => {
       entryyear: document.getElementById("entryyear").value,
       exityear: document.getElementById("exityear").value,
       email: email,
-      password: document.getElementById("password").value,
       mobile: document.getElementById("mobile").value,
       organisation: document.getElementById("organisation").value,
       designation: document.getElementById("designation").value,
@@ -97,21 +83,20 @@ form.addEventListener("submit", async (e) => {
     await set(ref(db, "alumni/" + newKey), alumniData);
 
     localStorage.setItem("registered", "true");
-    alert("✅ Registration Successful & Auth Account Created!");
+    alert("✅ Registration Successful!");
 
     form.reset();
     modal.style.display = "none";
 
   } catch (error) {
     console.error(error);
-    alert("❌ " + error.message);
+    alert("❌ Something went wrong!");
   }
 });
 
 // ================= LOGOUT =================
 window.logoutUser = function () {
   localStorage.removeItem("registered");
-  localStorage.removeItem("loggedIn");
   alert("Logged out successfully");
   location.reload();
 };

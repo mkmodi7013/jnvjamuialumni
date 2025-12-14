@@ -1,6 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+// 🔥 Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
   authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
@@ -8,8 +9,7 @@ const firebaseConfig = {
   projectId: "jnvjamuialumni-edceb",
   storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
   messagingSenderId: "412877503961",
-  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8",
-  measurementId: "G-D59BC7Q6JE"
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -17,25 +17,76 @@ const db = getDatabase(app);
 
 let alumniData = {};
 
+// ================= FETCH DATA =================
 async function fetchAlumni() {
   const tableBody = document.querySelector("#alumniTable tbody");
-  tableBody.innerHTML = `<tr><td class="loading" colspan="14">Loading...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="15">Loading...</td></tr>`;
 
   try {
     const snapshot = await get(child(ref(db), "alumni"));
-    if (snapshot.exists()) {
-      alumniData = snapshot.val();
-      populateFilters(alumniData);
-      renderTable(alumniData);
-    } else {
-      tableBody.innerHTML = `<tr><td colspan="14" class="loading">No alumni found.</td></tr>`;
+    if (!snapshot.exists()) {
+      tableBody.innerHTML = `<tr><td colspan="15">No alumni found</td></tr>`;
+      return;
     }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    tableBody.innerHTML = `<tr><td colspan="14" class="loading">Error loading data.</td></tr>`;
+
+    alumniData = snapshot.val();
+
+    populateFilters(alumniData);
+    renderTable(alumniData);
+
+  } catch (err) {
+    console.error(err);
+    tableBody.innerHTML = `<tr><td colspan="15">Error loading data</td></tr>`;
   }
 }
 
+// ================= SORT KEYS (MAIN FIX) =================
+function getSortedKeys(data) {
+  return Object.keys(data).sort((a, b) => {
+    const na = parseInt(a.replace(/\D/g, "")) || 0;
+    const nb = parseInt(b.replace(/\D/g, "")) || 0;
+    return na - nb;
+  });
+}
+
+// ================= RENDER TABLE =================
+function renderTable(data) {
+  const tableBody = document.querySelector("#alumniTable tbody");
+  tableBody.innerHTML = "";
+
+  const keys = getSortedKeys(data);
+
+  if (keys.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="15">No records found</td></tr>`;
+    return;
+  }
+
+  keys.forEach((key, index) => {
+    const a = data[key];
+
+    tableBody.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${key}</td>
+        <td>${a.name || ""}</td>
+        <td>${a.gender || ""}</td>
+        <td>${a.profile || ""}</td>
+        <td>${a.entryclass || ""}</td>
+        <td>${a.exitclass || ""}</td>
+        <td>${a.entryyear || ""}</td>
+        <td>${a.exityear || ""}</td>
+        <td>${a.email || ""}</td>
+        <td>${a.mobile || ""}</td>
+        <td>${a.organisation || ""}</td>
+        <td>${a.designation || ""}</td>
+        <td>${a.location || ""}</td>
+        <td>${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ""}</td>
+      </tr>
+    `);
+  });
+}
+
+// ================= FILTER OPTIONS =================
 function populateFilters(data) {
   const genders = new Set();
   const profiles = new Set();
@@ -51,79 +102,52 @@ function populateFilters(data) {
   const profileFilter = document.getElementById("profileFilter");
   const entryYearFilter = document.getElementById("entryYearFilter");
 
-  genders.forEach(g => genderFilter.insertAdjacentHTML('beforeend', `<option value="${g}">${g}</option>`));
-  profiles.forEach(p => profileFilter.insertAdjacentHTML('beforeend', `<option value="${p}">${p}</option>`));
-  entryYears.forEach(y => entryYearFilter.insertAdjacentHTML('beforeend', `<option value="${y}">${y}</option>`));
+  genderFilter.innerHTML = `<option value="">All Genders</option>`;
+  profileFilter.innerHTML = `<option value="">All Profiles</option>`;
+  entryYearFilter.innerHTML = `<option value="">All Entry Years</option>`;
+
+  [...genders].sort().forEach(v => genderFilter.innerHTML += `<option value="${v}">${v}</option>`);
+  [...profiles].sort().forEach(v => profileFilter.innerHTML += `<option value="${v}">${v}</option>`);
+  [...entryYears].sort().forEach(v => entryYearFilter.innerHTML += `<option value="${v}">${v}</option>`);
 }
 
-function renderTable(data) {
-  const tableBody = document.querySelector("#alumniTable tbody");
-  tableBody.innerHTML = "";
-  const keys = Object.keys(data);
-
-  if (keys.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="14" class="loading">No records found.</td></tr>`;
-    return;
-  }
-
-  keys.forEach((key, index) => {
-    const a = data[key];
-
-    const row = `
-      <tr>
-        <td>${index + 1}</td>
-        <td>${key}</td>
-        <td>${a.name || ''}</td>
-        <td>${a.gender || ''}</td>
-        <td>${a.profile || ''}</td>
-        <td>${a.entryclass || ''}</td>
-        <td>${a.exitclass || ''}</td>
-        <td>${a.entryyear || ''}</td>
-        <td>${a.exityear || ''}</td>
-        <td>${a.email || ''}</td>
-        <td>${a.mobile || ''}</td>
-        <td>${a.organisation || ''}</td>
-        <td>${a.designation || ''}</td>
-        <td>${a.location || ''}</td>
-        <td>${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ''}</td>
-      </tr>`;
-    tableBody.insertAdjacentHTML("beforeend", row);
-  });
-}
-
+// ================= FILTER DATA =================
 function filterData() {
-  const searchQuery = document.getElementById("searchInput").value.toLowerCase();
-  const genderValue = document.getElementById("genderFilter").value;
-  const profileValue = document.getElementById("profileFilter").value;
-  const entryYearValue = document.getElementById("entryYearFilter").value;
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const gender = document.getElementById("genderFilter").value;
+  const profile = document.getElementById("profileFilter").value;
+  const entryYear = document.getElementById("entryYearFilter").value;
 
-  const filteredData = Object.fromEntries(
-    Object.entries(alumniData).filter(([key, a]) => {
-      const matchesSearch = Object.values(a).some(val =>
-        val && val.toString().toLowerCase().includes(searchQuery)
+  const filtered = Object.fromEntries(
+    Object.entries(alumniData).filter(([_, a]) => {
+      const textMatch = Object.values(a).some(v =>
+        v && v.toString().toLowerCase().includes(search)
       );
-      const matchesGender = genderValue ? a.gender === genderValue : true;
-      const matchesProfile = profileValue ? a.profile === profileValue : true;
-      const matchesEntryYear = entryYearValue ? a.entryyear === entryYearValue : true;
-
-      return matchesSearch && matchesGender && matchesProfile && matchesEntryYear;
+      return (
+        textMatch &&
+        (!gender || a.gender === gender) &&
+        (!profile || a.profile === profile) &&
+        (!entryYear || a.entryyear === entryYear)
+      );
     })
   );
 
-  renderTable(filteredData);
+  renderTable(filtered);
 }
 
-// Event listeners
+// ================= EVENTS =================
 document.getElementById("searchInput").addEventListener("input", filterData);
 document.getElementById("genderFilter").addEventListener("change", filterData);
 document.getElementById("profileFilter").addEventListener("change", filterData);
 document.getElementById("entryYearFilter").addEventListener("change", filterData);
+
 document.getElementById("resetFilters").addEventListener("click", () => {
-  document.getElementById("searchInput").value = '';
-  document.getElementById("genderFilter").value = '';
-  document.getElementById("profileFilter").value = '';
-  document.getElementById("entryYearFilter").value = '';
+  document.getElementById("searchInput").value = "";
+  document.getElementById("genderFilter").value = "";
+  document.getElementById("profileFilter").value = "";
+  document.getElementById("entryYearFilter").value = "";
   renderTable(alumniData);
 });
 
+// ================= LOAD =================
 window.addEventListener("load", fetchAlumni);
