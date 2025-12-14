@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suggestions</title>
+<style>
+  body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+  h1 { color: #d32f2f; text-align: center; }
+  table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+  th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+  th { background: #d32f2f; color: white; }
+  tr:nth-child(even) { background: #f9f9f9; }
+</style>
+</head>
+<body>
+
+<h1>All Suggestions</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Email</th>
+      <th>Note</th>
+      <th>Submitted At</th>
+    </tr>
+  </thead>
+  <tbody id="suggestionTableBody">
+    <tr><td colspan="4">Loading...</td></tr>
+  </tbody>
+</table>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  // 🔥 Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+    authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+    projectId: "jnvjamuialumni-edceb",
+    storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+    messagingSenderId: "412877503961",
+    appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const tableBody = document.getElementById("suggestionTableBody");
+
+  async function loadSuggestions() {
+    try {
+      const q = query(collection(db, "suggestions"), orderBy("submittedAt", "desc"));
+      const snapshot = await getDocs(q);
+
+      tableBody.innerHTML = "";
+
+      if (snapshot.empty) {
+        tableBody.innerHTML = `<tr><td colspan="4">No suggestions found.</td></tr>`;
+        return;
+      }
+
+      let index = 1;
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const row = `
+          <tr>
+            <td>${index++}</td>
+            <td>${data.email || ""}</td>
+            <td>${data.note || ""}</td>
+            <td>${data.submittedAt ? new Date(data.submittedAt).toLocaleString() : ""}</td>
+          </tr>
+        `;
+        tableBody.insertAdjacentHTML("beforeend", row);
+      });
+    } catch (error) {
+      console.error(error);
+      tableBody.innerHTML = `<tr><td colspan="4">Error: ${error.message}</td></tr>`;
+    }
+  }
+
+  loadSuggestions();
+</script>
+
+</body>
+</html>

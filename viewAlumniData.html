@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alumni Database </title>
+<link rel="stylesheet" href="fetchalumnidata.css">
+</head>
+<body>
+
+<h1>JNV Jamui Alumni Details</h1>
+
+<div class="filters">
+  <input type="text" id="searchInput" placeholder="Search all fields...">
+  <select id="genderFilter">
+    <option value="">All Genders</option>
+  </select>
+  <select id="profileFilter">
+    <option value="">All Profiles</option>
+  </select>
+  <select id="entryYearFilter">
+    <option value="">All Entry Years</option>
+  </select>
+  <button id="resetFilters">Reset Filters</button>
+  <button><a href="index.html">Home</a></button>
+</div>
+
+<table id="alumniTable">
+  <thead>
+    <tr>
+      <th>Index</th>
+      <th>Alumni Id</th>
+      <th>Name</th>
+      <th>Gender</th>
+      <th>Profile</th>
+      <th>Entry Class</th>
+      <th>Exit Class</th>
+      <th>Entry Year</th>
+      <th>Exit Year</th>
+      <th>Email</th>
+      <th>Mobile</th>
+      <th>Organisation</th>
+      <th>Designation</th>
+      <th>Location</th>
+      <th>Submitted At</th>
+      <th>Actions</th> <!-- NEW COLUMN FOR EDIT/DELETE -->
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td class="loading" colspan="16">Loading...</td></tr>
+  </tbody>
+</table>
+
+<script type="module" src="./fetchalumnidata.js"></script>
+
+</body>
+</html>
