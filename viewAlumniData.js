@@ -53,47 +53,52 @@ function renderTable(data) {
   const tableBody = document.querySelector("#alumniTable tbody");
   tableBody.innerHTML = "";
 
-  const sortedKeys = getSortedKeys(data);
+  const keys = getSortedKeys(data);
 
-  if (sortedKeys.length === 0) {
+  if (keys.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="16">No records found</td></tr>`;
     return;
   }
 
-  sortedKeys.forEach((key, index) => {
-    const a = data[key] || {};
+  keys.forEach((key, index) => {
+    const a = data[key];
     const row = document.createElement("tr");
     row.dataset.key = key;
 
-    // ईमेल के लिए 'mailto:' और मोबाइल के लिए 'tel:' लिंक का उपयोग करें
-    const emailLink = a.email ? `<a href="mailto:${a.email}">${a.email}</a>` : "";
-    const mobileLink = a.mobile ? `<a href="tel:${a.mobile}">${a.mobile}</a>` : "";
-
     row.innerHTML = `
-      <td>${index + 1}</td>
-      <td>${key}</td>
-      <td>${a.name || ""}</td>
-      <td>${a.gender || ""}</td>
-      <td>${a.profile || ""}</td>
-      <td>${a.entryclass || ""}</td>
-      <td>${a.exitclass || ""}</td>
-      <td>${a.entryyear || ""}</td>
-      <td>${a.exityear || ""}</td>
-      <td>${emailLink}</td> <!-- ईमेल अब क्लिक करने योग्य है -->
-      <td>${mobileLink}</td> <!-- मोबाइल अब क्लिक करने योग्य है -->
-      <td>${a.organisation || ""}</td>
-      <td>${a.designation || ""}</td>
-      <td>${a.location || ""}</td>
-      <td>${a.submittedAt ? new Date(Number(a.submittedAt)).toLocaleDateString() : ""}</td>
-      <td>
-        <button class="editBtn" data-key="${key}">Edit</button>
-        <button class="deleteBtn" data-key="${key}" style="color:red">Delete</button>
-      </td>
+        <td>${index + 1}</td>
+        <td>${key}</td>
+        <td contenteditable="true" class="edit-cell" data-field="name">${a.name || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="gender">${a.gender || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="profile">${a.profile || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="entryclass">${a.entryclass || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="exitclass">${a.exitclass || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="entryyear">${a.entryyear || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="exityear">${a.exityear || ""}</td>
+       <!-- ईमेल: एडिटेबल टेक्स्ट + छोटा क्लिकेबल लिंक -->
+        <td>
+            <div contenteditable="true" class="edit-cell" data-field="email" style="display:inline-block; min-width:50px;">${a.email || ""}</div>
+            ${a.email ? `<a href="mailto:${a.email}" title="Send Mail" style="margin-left:5px; text-decoration:none;">📧</a>` : ""}
+        </td>
+
+        <!-- मोबाइल: एडिटेबल टेक्स्ट + छोटा क्लिकेबल लिंक -->
+        <td>
+            <div contenteditable="true" class="edit-cell" data-field="mobile" style="display:inline-block; min-width:50px;">${a.mobile || ""}</div>
+            ${a.mobile ? `<a href="tel:${a.mobile}" title="Call Now" style="margin-left:5px; text-decoration:none;">📞</a>` : ""}
+        </td>
+        <td contenteditable="true" class="edit-cell" data-field="organisation">${a.organisation || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="designation">${a.designation || ""}</td>
+        <td contenteditable="true" class="edit-cell" data-field="location">${a.location || ""}</td>
+        <td>${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ""}</td>
+        <td>
+          <button type="button" class="saveBtn" style="display:none; background:green; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Save</button>
+          <button type="button" class="deleteBtn" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; margin-top:2px;">Delete</button>
+        </td>
     `;
     tableBody.appendChild(row);
   });
 
-  addRowEventListeners();
+  addRowEventListeners(); // इवेंट्स जोड़ें
 }
 
 
@@ -148,40 +153,58 @@ function filterData() {
 
 // ================= ADD EDIT & DELETE EVENTS =================
 function addRowEventListeners() {
-  const editButtons = document.querySelectorAll(".editBtn");
-  const deleteButtons = document.querySelectorAll(".deleteBtn");
-
-  editButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
-      const row = btn.closest("tr");
-      const key = row.dataset.key;
-
-      const newName = prompt("Edit Name:", alumniData[key].name || "");
-      if (newName !== null) {
-        update(ref(db, `alumni/${key}`), { name: newName })
-          .then(() => {
-            alumniData[key].name = newName;
-            renderTable(alumniData);
-          })
-          .catch(err => console.error(err));
-      }
-    });
+  // 1. जब भी किसी सेल में टाइप करें, उस रो का 'Save' बटन दिखाएँ
+  document.querySelectorAll(".edit-cell").forEach(cell => {
+    cell.oninput = (e) => {
+      const row = e.target.closest("tr");
+      const saveBtn = row.querySelector(".saveBtn");
+      if (saveBtn) saveBtn.style.display = "block";
+      e.target.style.backgroundColor = "#fff9c4"; // एडिट हो रहे सेल का रंग बदलें
+    };
   });
 
-  deleteButtons.forEach(btn => {
-    btn.addEventListener("click", () => {
+  // 2. सेव बटन का लॉजिक
+  document.querySelectorAll(".saveBtn").forEach(btn => {
+    btn.onclick = async () => {
       const row = btn.closest("tr");
       const key = row.dataset.key;
+      const editableCells = row.querySelectorAll(".edit-cell");
+      
+      const updates = {};
+      editableCells.forEach(cell => {
+        const fieldName = cell.dataset.field;
+        updates[fieldName] = cell.innerText.trim();
+      });
 
-      if (confirm("Are you sure you want to delete this record?")) {
-        remove(ref(db, `alumni/${key}`))
-          .then(() => {
-            delete alumniData[key];
-            renderTable(alumniData);
-          })
-          .catch(err => console.error(err));
+      try {
+        await update(ref(db, `alumni/${key}`), updates);
+        
+        // लोकल डेटा अपडेट करें ताकि फिल्टर में पुराना डेटा न आए
+        alumniData[key] = { ...alumniData[key], ...updates };
+        
+        btn.style.display = "none"; // सेव होने के बाद बटन छुपाएं
+        editableCells.forEach(c => c.style.backgroundColor = "transparent");
+        alert("सफलतापूर्वक सेव हो गया!");
+      } catch (err) {
+        alert("सेव फेल हुआ: " + err.message);
       }
-    });
+    };
+  });
+
+  // 3. डिलीट बटन का लॉजिक
+  document.querySelectorAll(".deleteBtn").forEach(btn => {
+    btn.onclick = async () => {
+      const key = btn.closest("tr").dataset.key;
+      if (confirm(`क्या आप ${alumniData[key].name || 'इसे'} डिलीट करना चाहते हैं?`)) {
+        try {
+          await remove(ref(db, `alumni/${key}`));
+          delete alumniData[key];
+          renderTable(alumniData); // टेबल रिफ्रेश करें
+        } catch (err) {
+          alert("Delete Error: " + err.message);
+        }
+      }
+    };
   });
 }
 

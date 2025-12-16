@@ -31,11 +31,7 @@ button {
   cursor: pointer;
   transition: 0.3s;
 }
-a {
- 
-  color: white;
- text-decoration: none;
-}
+
 
 
 
@@ -71,25 +67,12 @@ tr:hover {
   font-size: 18px;
   color: #555;
 }
-#updateDelete_btn{
 
-   background: rgb(247, 41, 5, 0.7);
-  color: white;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.editBtn,
-.deleteBtn {
+.editBtn{
   display: inline-block !important;
   padding: 5px 8px;
   margin: 2px;
   cursor: pointer;
 }
-#alumniTable td:last-child {
-  background: yellow !important;
-  color: black !important;
-}
+
 
