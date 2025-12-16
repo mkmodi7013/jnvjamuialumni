@@ -53,43 +53,49 @@ function renderTable(data) {
   const tableBody = document.querySelector("#alumniTable tbody");
   tableBody.innerHTML = "";
 
-  const keys = getSortedKeys(data);
+  const sortedKeys = getSortedKeys(data);
 
-  if (keys.length === 0) {
+  if (sortedKeys.length === 0) {
     tableBody.innerHTML = `<tr><td colspan="16">No records found</td></tr>`;
     return;
   }
 
-  keys.forEach((key, index) => {
-    const a = data[key];
+  sortedKeys.forEach((key, index) => {
+    const a = data[key] || {};
+    const row = document.createElement("tr");
+    row.dataset.key = key;
 
-    tableBody.insertAdjacentHTML("beforeend", `
-      <tr data-key="${key}">
-        <td>${index + 1}</td>
-        <td>${key}</td>
-        <td>${a.name || ""}</td>
-        <td>${a.gender || ""}</td>
-        <td>${a.profile || ""}</td>
-        <td>${a.entryclass || ""}</td>
-        <td>${a.exitclass || ""}</td>
-        <td>${a.entryyear || ""}</td>
-        <td>${a.exityear || ""}</td>
-        <td>${a.email || ""}</td>
-        <td>${a.mobile || ""}</td>
-        <td>${a.organisation || ""}</td>
-        <td>${a.designation || ""}</td>
-        <td>${a.location || ""}</td>
-        <td>${a.submittedAt ? new Date(a.submittedAt).toLocaleString() : ""}</td>
-        <td>
-          <button class="editBtn">Edit</button>
-          <button class="deleteBtn">Delete</button>
-        </td>
-      </tr>
-    `);
+    // ईमेल के लिए 'mailto:' और मोबाइल के लिए 'tel:' लिंक का उपयोग करें
+    const emailLink = a.email ? `<a href="mailto:${a.email}">${a.email}</a>` : "";
+    const mobileLink = a.mobile ? `<a href="tel:${a.mobile}">${a.mobile}</a>` : "";
+
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td>${key}</td>
+      <td>${a.name || ""}</td>
+      <td>${a.gender || ""}</td>
+      <td>${a.profile || ""}</td>
+      <td>${a.entryclass || ""}</td>
+      <td>${a.exitclass || ""}</td>
+      <td>${a.entryyear || ""}</td>
+      <td>${a.exityear || ""}</td>
+      <td>${emailLink}</td> <!-- ईमेल अब क्लिक करने योग्य है -->
+      <td>${mobileLink}</td> <!-- मोबाइल अब क्लिक करने योग्य है -->
+      <td>${a.organisation || ""}</td>
+      <td>${a.designation || ""}</td>
+      <td>${a.location || ""}</td>
+      <td>${a.submittedAt ? new Date(Number(a.submittedAt)).toLocaleDateString() : ""}</td>
+      <td>
+        <button class="editBtn" data-key="${key}">Edit</button>
+        <button class="deleteBtn" data-key="${key}" style="color:red">Delete</button>
+      </td>
+    `;
+    tableBody.appendChild(row);
   });
 
   addRowEventListeners();
 }
+
 
 // ================= FILTER OPTIONS =================
 function populateFilters(data) {

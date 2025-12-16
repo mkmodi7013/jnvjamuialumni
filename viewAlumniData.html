@@ -4,7 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Alumni Database </title>
-<link rel="stylesheet" href="fetchalumnidata.css">
+
+<link rel="stylesheet" href="viewAlumniData.css?v=2">
+
+
 </head>
 <body>
 
@@ -22,7 +25,8 @@
     <option value="">All Entry Years</option>
   </select>
   <button id="resetFilters">Reset Filters</button>
-  <button><a href="index.html">Home</a></button>
+ <button type="button" onclick="location.href='index.html'">Home</button>
+
 </div>
 
 <table id="alumniTable">
@@ -51,7 +55,7 @@
   </tbody>
 </table>
 
-<script type="module" src="./fetchalumnidata.js"></script>
+<script type="module" src="./fetchalumnidata.js?v=2"></script>
 
 </body>
 </html>
