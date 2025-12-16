@@ -75,8 +75,17 @@ function renderTable(data) {
         <td>${a.exitclass || ""}</td>
         <td>${a.entryyear || ""}</td>
         <td>${a.exityear || ""}</td>
-        <td>${a.email || ""}</td>
-        <td>${a.mobile || ""}</td>
+        <!-- ईमेल: एडिटेबल टेक्स्ट + छोटा क्लिकेबल लिंक -->
+        <td>
+            <div>${a.email || ""}</div>
+            ${a.email ? `<a href="mailto:${a.email}" title="Send Mail" style="margin-left:5px; text-decoration:none;">📧</a>` : ""}
+        </td>
+
+        <!-- मोबाइल: एडिटेबल टेक्स्ट + छोटा क्लिकेबल लिंक -->
+        <td>
+            <div>${a.mobile || ""}</div>
+            ${a.mobile ? `<a href="tel:${a.mobile}" title="Call Now" style="margin-left:5px; text-decoration:none;">📞</a>` : ""}
+        </td>
         <td>${a.organisation || ""}</td>
         <td>${a.designation || ""}</td>
         <td>${a.location || ""}</td>
