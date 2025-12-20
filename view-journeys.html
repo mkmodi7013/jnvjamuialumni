@@ -70,21 +70,24 @@ header p{
 }
 
 /* DETAILS */
+/* DETAILS */
 .details{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  gap:14px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px; /* कम gap */
 }
 .detail{
   background:#eef2ff;
-  padding:12px 14px;
-  border-radius:10px;
-  font-size:19px;
-  line-height:1.6;
+  padding:6px 10px; /* कम padding */
+  border-radius:8px;
+  font-size:16px;   /* छोटा font */
+  line-height:1.4;  /* कम line height */
+  flex: 1 1 calc(50% - 8px); /* दो columns compact */
 }
 .detail b{
-  font-weight:700;
+  font-weight:600;
 }
+
 
 /* MOBILE LINK */
 .mobile-link{
