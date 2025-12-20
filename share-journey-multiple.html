@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Share Your Navodaya Journey</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family:"Segoe UI",Arial,sans-serif;
+  background:#f4f6f8;
+  padding:20px;
+}
+h2,h3{text-align:center;margin:10px 0;}
+input,textarea,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  font-size:16px;
+}
+textarea{min-height:160px;}
+button{
+  background:#1a73e8;
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  font-weight:600;
+  cursor:pointer;
+}
+button:hover{background:#1558b0;}
+.back-btn{
+  background:#555;
+  width:auto;
+  padding:8px 12px;
+  margin-bottom:10px;
+}
+.card{
+  background:#fff;
+  padding:14px;
+  border-radius:10px;
+  margin-top:14px;
+}
+.story{
+  background:#f1f5ff;
+  padding:12px;
+  border-radius:8px;
+  margin-top:10px;
+}
+.story small{color:#555;}
+.edit-btn{
+  background:#ff9800;
+  margin-top:8px;
+}
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.5);
+}
+.modal-content{
+  background:#fff;
+  max-width:520px;
+  margin:6% auto;
+  padding:18px;
+  border-radius:10px;
+}
+.close{
+  float:right;
+  cursor:pointer;
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+
+<button class="back-btn" onclick="history.back()">← Back</button>
+<h2>Share Your Navodaya Journey</h2>
+
+<input type="tel" id="mobile" placeholder="Enter registered mobile number" maxlength="10">
+<button onclick="fetchUser()">Continue</button>
+
+<!-- MODAL -->
+<div class="modal" id="popup">
+  <div class="modal-content">
+    <span class="close" onclick="closePopup()">×</span>
+
+    <h3 id="alumniName"></h3>
+
+    <textarea id="journey"
+      placeholder="Write a new journey (300–500 words recommended)"></textarea>
+    <button onclick="submitJourney()">➕ Add New Journey</button>
+
+    <h3>Your Previous Journeys</h3>
+    <div id="journeyList"></div>
+  </div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getDatabase, ref, get, child,
+  update, push
+} from
+"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
+  projectId: "jnvjamuialumni-edceb",
+  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+  messagingSenderId: "412877503961",
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let alumniKey=null, alumniData=null;
+
+/* FETCH ALUMNI */
+async function fetchByMobile(mobile){
+  const snap = await get(child(ref(db),"alumni"));
+  if(!snap.exists()) return null;
+  const data = snap.val();
+  for(const k in data){
+    if(data[k].mobile==mobile){
+      alumniKey=k;
+      return data[k];
+    }
+  }
+  return null;
+}
+
+window.fetchUser = async ()=>{
+  const mobile=document.getElementById("mobile").value.trim();
+  if(mobile.length!==10){
+    alert("Enter valid mobile number");
+    return;
+  }
+  alumniData=await fetchByMobile(mobile);
+  if(!alumniData){
+    alert("Alumni not found");
+    return;
+  }
+  document.getElementById("alumniName").innerText=
+    alumniData.name+" ("+(alumniData.profile||"")+")";
+  renderJourneys();
+  document.getElementById("popup").style.display="block";
+};
+
+/* ADD NEW JOURNEY */
+window.submitJourney = async ()=>{
+  const text=document.getElementById("journey").value.trim();
+  if(text.length<50){
+    alert("Please write at least 50 words");
+    return;
+  }
+
+  const refJourneys=ref(db,"alumni/"+alumniKey+"/journeys");
+  const newRef=push(refJourneys);
+
+  await update(newRef,{
+    text:text,
+    createdAt:Date.now(),
+    updatedAt:Date.now(),
+    likes:0
+  });
+
+  document.getElementById("journey").value="";
+  renderJourneys();
+};
+
+/* RENDER + EDIT */
+async function renderJourneys(){
+  const list=document.getElementById("journeyList");
+  list.innerHTML="Loading...";
+  const snap=await get(ref(db,"alumni/"+alumniKey+"/journeys"));
+  if(!snap.exists()){
+    list.innerHTML="<p>No journeys yet</p>";
+    return;
+  }
+  const data=snap.val();
+  list.innerHTML="";
+  Object.entries(data).forEach(([id,j])=>{
+    const div=document.createElement("div");
+    div.className="story";
+    div.innerHTML=`
+      <p>${j.text.substring(0,300)}...</p>
+      <small>
+        Created: ${new Date(j.createdAt).toLocaleDateString()}
+      </small><br>
+      <button class="edit-btn" onclick="editJourney('${id}')">
+        ✏️ Edit
+      </button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+window.editJourney = async (jid)=>{
+  const newText=prompt("Edit your journey text:");
+  if(!newText || newText.length<50) return;
+
+  await update(
+    ref(db,"alumni/"+alumniKey+"/journeys/"+jid),
+    { text:newText, updatedAt:Date.now() }
+  );
+  renderJourneys();
+};
+
+window.closePopup=()=>{
+  document.getElementById("popup").style.display="none";
+};
+</script>
+
+</body>
+</html>

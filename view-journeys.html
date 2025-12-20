@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Alumni Success Journeys | JNV Jamui</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;
+  background:#f2f4f7;
+  font-size:18px;
+}
+
+/* HEADER */
+header{
+  background:linear-gradient(135deg,#f52905,#f52905);
+  color:#fff;
+  padding:30px 16px;
+  text-align:center;
+}
+header h1{
+  margin:0;
+  font-size:36px;
+  font-weight:800;
+}
+header p{
+  margin-top:8px;
+  font-size:18px;
+  opacity:.95;
+}
+
+/* SEARCH */
+.search-box{
+  max-width:900px;
+  margin:20px auto;
+  padding:0 16px;
+}
+.search-box input{
+  width:100%;
+  padding:16px;
+  font-size:18px;
+  border-radius:12px;
+  border:2px solid #ddd;
+}
+
+/* CONTAINER */
+.container{
+  max-width:1200px;
+  margin:auto;
+  padding:16px;
+}
+
+/* CARD */
+.journey-card{
+  background:#fff;
+  border-radius:18px;
+  padding:26px;
+  margin-bottom:28px;
+  box-shadow:0 12px 30px rgba(0,0,0,.12);
+}
+
+/* NAME */
+.name{
+  font-size:28px;
+  font-weight:800;
+  color:#222;
+  margin-bottom:12px;
+}
+
+/* DETAILS */
+.details{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:14px;
+}
+.detail{
+  background:#eef2ff;
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:19px;
+  line-height:1.6;
+}
+.detail b{
+  font-weight:700;
+}
+
+/* MOBILE LINK */
+.mobile-link{
+  color:#0f62fe;
+  font-weight:700;
+  text-decoration:none;
+  margin-left:6px;
+}
+.mobile-link:hover{
+  text-decoration:underline;
+  color:#003a8f;
+}
+
+/* UNDERLINE */
+.profile-divider{
+  margin:22px 0 12px;
+  height:3px;
+  width:100%;
+  background:linear-gradient(to right,#0f62fe,#ff9800);
+  border-radius:3px;
+}
+
+/* TITLES */
+.section-title{
+  font-size:21px;
+  font-weight:800;
+  color:#0f62fe;
+  margin:18px 0 10px;
+}
+
+/* JOURNEY */
+.journey-text{
+  font-size:19px;
+  line-height:1.9;
+  color:#222;
+  white-space:pre-wrap;
+}
+
+/* ACTIONS */
+.actions{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:18px;
+  flex-wrap:wrap;
+  gap:12px;
+}
+.like{
+  font-size:18px;
+  cursor:pointer;
+}
+.share a{
+  text-decoration:none;
+  background:#25d366;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:10px;
+  font-weight:700;
+}
+
+/* DATE */
+.date{
+  font-size:14px;
+  color:#555;
+  margin-top:8px;
+}
+
+/* EMPTY */
+.empty{
+  text-align:center;
+  font-size:22px;
+  margin-top:50px;
+  color:#555;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+  header h1{font-size:30px;}
+  .name{font-size:24px;}
+  body{font-size:17px;}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>Alumni Success Journeys</h1>
+  <p>From Navodaya to Inspiring Careers</p>
+</header>
+
+<div class="search-box">
+  <input type="text" id="searchInput"
+   placeholder="Search by name, organisation, profile, location...">
+</div>
+
+<div class="container" id="journeyContainer">
+  Loading journeys...
+</div>
+
+<!-- FIREBASE + DATA -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, child, runTransaction } from
+"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
+  projectId: "jnvjamuialumni-edceb",
+  storageBucket: "jnvjamuialumni-edceb.firebasestorage.app",
+  messagingSenderId: "412877503961",
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const container = document.getElementById("journeyContainer");
+let allData = [];
+
+async function loadJourneys(){
+  const snapshot = await get(child(ref(db), "alumni"));
+  if(!snapshot.exists()){
+    container.innerHTML =
+      `<div class="empty">No success journeys found</div>`;
+    return;
+  }
+
+  allData = [];
+  Object.entries(snapshot.val()).forEach(([alumniKey,a])=>{
+    if(a.journeys){
+      Object.entries(a.journeys).forEach(([jid,j])=>{
+        allData.push({
+          alumniKey,
+          journeyId: jid,
+          name: a.name,
+          profile: a.profile,
+          designation: a.designation,
+          organisation: a.organisation,
+          location: a.location,
+          mobile: a.mobile,
+          journey: j.text,
+          likes: j.likes || 0,
+          createdAt: j.createdAt
+        });
+      });
+    }
+  });
+
+  render(allData);
+}
+
+function render(data){
+  if(data.length === 0){
+    container.innerHTML =
+      `<div class="empty">No journeys match your search</div>`;
+    return;
+  }
+
+  container.innerHTML = data.map(a => `
+    <div class="journey-card">
+
+      <div class="name">${a.name || ""}</div>
+
+      <div class="details">
+        ${a.profile ? `<div class="detail"><b>Profile:</b> ${a.profile}</div>` : ""}
+        ${a.designation ? `<div class="detail"><b>Designation:</b> ${a.designation}</div>` : ""}
+        ${a.organisation ? `<div class="detail"><b>Organisation:</b> ${a.organisation}</div>` : ""}
+        ${a.location ? `<div class="detail"><b>Location:</b> ${a.location}</div>` : ""}
+        ${a.mobile ? `
+          <div class="detail">
+            <b>Mobile:</b>
+            <a class="mobile-link" href="tel:${a.mobile}">
+              ${a.mobile} 📞
+            </a>
+          </div>` : ""}
+      </div>
+
+      <div class="profile-divider"></div>
+
+      <div class="section-title">Success Journey</div>
+      <div class="journey-text">${a.journey}</div>
+
+      <div class="actions">
+        <div class="like"
+          onclick="likeJourney('${a.alumniKey}','${a.journeyId}')">
+          👍 Like <span id="like-${a.journeyId}">${a.likes}</span>
+        </div>
+
+        <div class="share">
+          <a target="_blank"
+            href="https://wa.me/?text=${encodeURIComponent(
+              `Success Journey of ${a.name}\n\n${a.journey}`
+            )}">
+            Share on WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <div class="date">
+        ${a.createdAt ?
+          "Shared on " +
+          new Date(a.createdAt).toLocaleDateString() : ""}
+      </div>
+    </div>
+  `).join("");
+}
+
+document.getElementById("searchInput")
+.addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  render(allData.filter(a =>
+    Object.values(a).some(v =>
+      v && v.toString().toLowerCase().includes(q)
+    )
+  ));
+});
+
+loadJourneys();
+
+/* LIKE SYSTEM */
+function hasLiked(journeyId){
+  return localStorage.getItem("liked_"+journeyId);
+}
+function markLiked(journeyId){
+  localStorage.setItem("liked_"+journeyId,"yes");
+}
+
+window.likeJourney = function(alumniKey, journeyId){
+  if(hasLiked(journeyId)){
+    alert("You already liked this journey 👍");
+    return;
+  }
+
+  const likeRef = ref(
+    db,
+    `alumni/${alumniKey}/journeys/${journeyId}/likes`
+  );
+
+  runTransaction(likeRef, current => (current||0)+1)
+  .then(()=>{
+    markLiked(journeyId);
+    const span=document.getElementById("like-"+journeyId);
+    span.innerText=parseInt(span.innerText)+1;
+  });
+};
+</script>
+
+</body>
+</html>
