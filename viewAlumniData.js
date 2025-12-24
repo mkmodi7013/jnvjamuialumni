@@ -95,7 +95,7 @@ function renderTable(data) {
           <button type="button" class="deleteBtn" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; margin-top:2px;">Delete</button>
         </td>
         <td>
-          <select class="verifier-select" style="width:100px; padding:2px;">
+          <select class="verifier-select">
             <option value="None" ${verifierValue==="None"?"selected":""}>None</option>
             <option value="Verifier1" ${verifierValue==="Verifier1"?"selected":""}>Verifier1</option>
             <option value="Verifier2" ${verifierValue==="Verifier2"?"selected":""}>Verifier2</option>

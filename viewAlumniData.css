@@ -74,5 +74,25 @@ tr:hover {
   margin: 2px;
   cursor: pointer;
 }
+/* Make sure the dropdown fits inside the table cell */
+#alumniTable td select.verifier-select {
+  width: 100%;         /* full width of cell */
+  padding: 4px 6px;    /* adjust padding */
+  border-radius: 4px;  /* rounded corners */
+  border: 1px solid #f72905;
+  font-size: 14px;
+  background: #fff;
+  box-sizing: border-box; /* important for full width */
+}
+
+/* Optional: highlight on hover */
+#alumniTable td select.verifier-select:hover {
+  border-color: #d11f00;
+}
+
+/* Optional: make td not shrink too much */
+#alumniTable td {
+  vertical-align: middle;
+}
 
 
