@@ -96,11 +96,9 @@ function renderTable(data) {
         </td>
         <td>
           <select class="verifier-select">
-            <option value="None" ${verifierValue==="None"?"selected":""}>None</option>
-            <option value="Verifier1" ${verifierValue==="Verifier1"?"selected":""}>Verifier1</option>
-            <option value="Verifier2" ${verifierValue==="Verifier2"?"selected":""}>Verifier2</option>
-            <option value="Verifier3" ${verifierValue==="Verifier3"?"selected":""}>Verifier3</option>
-          </select>
+            <option value="None-Verifier" ${verifierValue==="None-Verifier"?"selected":""}>None Verifier</option>
+            <option value="Verifier" ${verifierValue==="Verifier"?"selected":""}>Verifier</option>
+             </select>
         </td>
     `;
     tableBody.appendChild(row);
