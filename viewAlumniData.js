@@ -20,12 +20,12 @@ let alumniData = {};
 // ================= FETCH DATA =================
 async function fetchAlumni() {
   const tableBody = document.querySelector("#alumniTable tbody");
-  tableBody.innerHTML = `<tr><td colspan="16">Loading...</td></tr>`;
+  tableBody.innerHTML = `<tr><td colspan="18">Loading...</td></tr>`;
 
   try {
     const snapshot = await get(child(ref(db), "alumni"));
     if (!snapshot.exists()) {
-      tableBody.innerHTML = `<tr><td colspan="16">No alumni found</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="18">No alumni found</td></tr>`;
       return;
     }
 
@@ -35,7 +35,7 @@ async function fetchAlumni() {
 
   } catch (err) {
     console.error(err);
-    tableBody.innerHTML = `<tr><td colspan="16">Error loading data</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="18">Error loading data</td></tr>`;
   }
 }
 
@@ -56,7 +56,7 @@ function renderTable(data) {
   const keys = getSortedKeys(data);
 
   if (keys.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="16">No records found</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="18">No records found</td></tr>`;
     return;
   }
 
@@ -64,6 +64,9 @@ function renderTable(data) {
     const a = data[key];
     const row = document.createElement("tr");
     row.dataset.key = key;
+
+    // Default verifier value
+    const verifierValue = a.verifier || "None";
 
     row.innerHTML = `
         <td>${index + 1}</td>
@@ -75,13 +78,10 @@ function renderTable(data) {
         <td contenteditable="true" class="edit-cell" data-field="exitclass">${a.exitclass || ""}</td>
         <td contenteditable="true" class="edit-cell" data-field="entryyear">${a.entryyear || ""}</td>
         <td contenteditable="true" class="edit-cell" data-field="exityear">${a.exityear || ""}</td>
-       <!-- ईमेल: एडिटेबल टेक्स्ट + छोटा क्लिकेबल लिंक -->
         <td>
             <div contenteditable="true" class="edit-cell" data-field="email" style="display:inline-block; min-width:50px;">${a.email || ""}</div>
             ${a.email ? `<a href="mailto:${a.email}" title="Send Mail" style="margin-left:5px; text-decoration:none;">📧</a>` : ""}
         </td>
-
-        <!-- मोबाइल: एडिटेबल टेक्स्ट + छोटा क्लिकेबल लिंक -->
         <td>
             <div contenteditable="true" class="edit-cell" data-field="mobile" style="display:inline-block; min-width:50px;">${a.mobile || ""}</div>
             ${a.mobile ? `<a href="tel:${a.mobile}" title="Call Now" style="margin-left:5px; text-decoration:none;">📞</a>` : ""}
@@ -94,13 +94,20 @@ function renderTable(data) {
           <button type="button" class="saveBtn" style="display:none; background:green; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">Save</button>
           <button type="button" class="deleteBtn" style="background:red; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer; margin-top:2px;">Delete</button>
         </td>
+        <td>
+          <select class="verifier-select" style="width:100px; padding:2px;">
+            <option value="None" ${verifierValue==="None"?"selected":""}>None</option>
+            <option value="Verifier1" ${verifierValue==="Verifier1"?"selected":""}>Verifier1</option>
+            <option value="Verifier2" ${verifierValue==="Verifier2"?"selected":""}>Verifier2</option>
+            <option value="Verifier3" ${verifierValue==="Verifier3"?"selected":""}>Verifier3</option>
+          </select>
+        </td>
     `;
     tableBody.appendChild(row);
   });
 
-  addRowEventListeners(); // इवेंट्स जोड़ें
+  addRowEventListeners();
 }
-
 
 // ================= FILTER OPTIONS =================
 function populateFilters(data) {
@@ -153,36 +160,34 @@ function filterData() {
 
 // ================= ADD EDIT & DELETE EVENTS =================
 function addRowEventListeners() {
-  // 1. जब भी किसी सेल में टाइप करें, उस रो का 'Save' बटन दिखाएँ
   document.querySelectorAll(".edit-cell").forEach(cell => {
     cell.oninput = (e) => {
       const row = e.target.closest("tr");
       const saveBtn = row.querySelector(".saveBtn");
       if (saveBtn) saveBtn.style.display = "block";
-      e.target.style.backgroundColor = "#fff9c4"; // एडिट हो रहे सेल का रंग बदलें
+      e.target.style.backgroundColor = "#fff9c4";
     };
   });
 
-  // 2. सेव बटन का लॉजिक
   document.querySelectorAll(".saveBtn").forEach(btn => {
     btn.onclick = async () => {
       const row = btn.closest("tr");
       const key = row.dataset.key;
       const editableCells = row.querySelectorAll(".edit-cell");
-      
+      const verifierSelect = row.querySelector(".verifier-select");
+
       const updates = {};
       editableCells.forEach(cell => {
         const fieldName = cell.dataset.field;
         updates[fieldName] = cell.innerText.trim();
       });
 
+      if (verifierSelect) updates.verifier = verifierSelect.value;
+
       try {
         await update(ref(db, `alumni/${key}`), updates);
-        
-        // लोकल डेटा अपडेट करें ताकि फिल्टर में पुराना डेटा न आए
         alumniData[key] = { ...alumniData[key], ...updates };
-        
-        btn.style.display = "none"; // सेव होने के बाद बटन छुपाएं
+        btn.style.display = "none";
         editableCells.forEach(c => c.style.backgroundColor = "transparent");
         alert("सफलतापूर्वक सेव हो गया!");
       } catch (err) {
@@ -191,7 +196,6 @@ function addRowEventListeners() {
     };
   });
 
-  // 3. डिलीट बटन का लॉजिक
   document.querySelectorAll(".deleteBtn").forEach(btn => {
     btn.onclick = async () => {
       const key = btn.closest("tr").dataset.key;
@@ -199,7 +203,7 @@ function addRowEventListeners() {
         try {
           await remove(ref(db, `alumni/${key}`));
           delete alumniData[key];
-          renderTable(alumniData); // टेबल रिफ्रेश करें
+          renderTable(alumniData);
         } catch (err) {
           alert("Delete Error: " + err.message);
         }

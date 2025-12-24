@@ -1,102 +1,126 @@
-// Import Firebase SDK
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { 
-  getDatabase, ref, set, get, child 
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { db } from "./firebase.js";
+import { ref, set, get, child } from
+  "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// 🔥 Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
-  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
-  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
-  projectId: "jnvjamuialumni-edceb",
-  storageBucket: "jnvjamuialumni-edceb.appspot.com",
-  messagingSenderId: "412877503961",
-  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const form = document.getElementById("registrationForm");
 const dbRef = ref(db);
 
-// ================= AUTO OPEN MODAL =================
-const modal = document.getElementById("contact-modal");
-const isRegistered = localStorage.getItem("registered");
+// 🔴 ADMIN DETAILS
+const ADMIN_MOBILE = "9304939412"; // ← admin WhatsApp number
+const ADMIN_EMAIL  = "mkmodi7013@gmail.com";
 
-if (!isRegistered || isRegistered !== "true") {
-  setTimeout(() => {
-    modal.style.display = "flex";
-  }, 10000);
-}
-
-// ================= FORM SUBMIT =================
-const form = document.getElementById("registrationForm");
+// ⏱️ Anti-bot timing
+const pageLoadTime = Date.now();
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const email = document.getElementById("email").value.trim();
-
-  const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
-  if (!emailPattern.test(email)) {
-    alert("❌ Please enter a valid email address!");
+  // ⏱️ Time check (bot control)
+  if ((Date.now() - pageLoadTime) / 1000 < 5) {
+    alert("❌ Suspicious submission blocked");
     return;
   }
 
-  try {
-    // ================= CHECK DUPLICATE EMAIL =================
-    const snapshot = await get(child(dbRef, "alumni"));
-    let nextIndex = 1;
+  // 🔹 Get values
+  const name        = val("name");
+  const gender      = val("gender");
+  const profile     = val("profile");
+  const entryclass  = val("entryclass");
+  const exitclass   = val("exitclass");
+  const entryyear   = val("entryyear");
+  const exityear    = val("exityear");
+  const email       = val("email").toLowerCase();
+  const mobile      = val("mobile");
+  const organisation= val("organisation");
+  const designation = val("designation");
+  const location    = val("location");
 
-    if (snapshot.exists()) {
-      const allData = snapshot.val();
-      const emails = Object.values(allData).map(a => a.email.toLowerCase());
+  // 🔐 Basic validation
+  if (!/^[6-9]\d{9}$/.test(mobile)) {
+    alert("❌ Invalid mobile number");
+    return;
+  }
 
-      if (emails.includes(email.toLowerCase())) {
-        alert("❌ This email is already registered!");
-        return;
+  // 🔎 Fetch existing alumni
+  const snap = await get(child(dbRef, "alumni"));
+  let nextIndex = 1;
+  let verifierMobile = null;
+  let verifierName = null;
+
+  if (snap.exists()) {
+    const data = snap.val();
+    nextIndex = Object.keys(data).length + 1;
+
+    Object.values(data).forEach(u => {
+
+      // ❌ Duplicate check
+      if (u.email === email || u.mobile === mobile) {
+        alert("❌ You are already registered");
+        throw "DUPLICATE";
       }
 
-      nextIndex = Object.keys(allData).length + 1;
-    }
-
-    // ================= SAVE DATA =================
-    const newKey = `jnvjamui${nextIndex}`;
-
-    const alumniData = {
-      name: document.getElementById("name").value,
-      gender: document.getElementById("gender").value,
-      profile: document.getElementById("profile").value,
-      entryclass: document.getElementById("entryclass").value,
-      exitclass: document.getElementById("exitclass").value,
-      entryyear: document.getElementById("entryyear").value,
-      exityear: document.getElementById("exityear").value,
-      email: email,
-      mobile: document.getElementById("mobile").value,
-      organisation: document.getElementById("organisation").value,
-      designation: document.getElementById("designation").value,
-      location: document.getElementById("location").value,
-      submittedAt: new Date().toISOString()
-    };
-
-    await set(ref(db, "alumni/" + newKey), alumniData);
-
-    localStorage.setItem("registered", "true");
-    alert("✅ Registration Successful!");
-
-    form.reset();
-    modal.style.display = "none";
-
-  } catch (error) {
-    console.error(error);
-    alert("❌ Something went wrong!");
+      // ✅ Same year + class VERIFIED user
+      if (
+        u.entryyear === entryyear &&
+        u.entryclass === entryclass &&
+        u.status === "verified"
+      ) {
+        verifierMobile = u.mobile;
+        verifierName = u.name;
+      }
+    });
   }
+
+  // 🆕 New user key
+  const newKey = "jnvjamui" + nextIndex;
+
+  // 💾 Save as PENDING
+   const pendingKey = "p_" + Date.now();
+
+await set(ref(db, "pending_alumni/" + pendingKey), {
+  name, gender, profile,
+  entryclass, exitclass,
+  entryyear, exityear,
+  email, mobile,
+  organisation, designation, location,
+  assignedVerifier: verifierMobile ? verifierMobile : "admin",
+  submittedAt: new Date().toISOString()
 });
 
-// ================= LOGOUT =================
-window.logoutUser = function () {
-  localStorage.removeItem("registered");
-  alert("Logged out successfully");
-  location.reload();
-};
+
+  // 📲 WhatsApp message
+  const message = `
+JNV Jamui Alumni Verification Request
+
+Name: ${name}
+Entry Year: ${entryyear}
+Entry Class: ${entryclass}
+
+Click to verify:
+https://YOURDOMAIN.com/verify.html?user=${newKey}
+`;
+
+  // 📞 Decide verifier
+  const whatsappNumber = verifierMobile
+    ? "91" + verifierMobile
+    : ADMIN_MOBILE;
+
+ alert("✅ Registration submitted successfully. Verification pending.");
+form.reset();
+document.getElementById("contact-modal").style.display = "none";
+
+
+  alert(
+    verifierMobile
+      ? "✅ Submitted! Verification request sent to your batchmate."
+      : "✅ Submitted! Verification request sent to Admin."
+  );
+
+  form.reset();
+  document.getElementById("contact-modal").style.display = "none";
+});
+
+// 🔧 Helper
+function val(id) {
+  return document.getElementById(id).value.trim();
+}
