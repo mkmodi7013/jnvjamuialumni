@@ -68,12 +68,22 @@ tr:hover {
   color: #555;
 }
 
-.editBtn{
-  display: inline-block !important;
-  padding: 5px 8px;
-  margin: 2px;
+.saveBtn{
+  background-color: #28a745;   /* Green */
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
   cursor: pointer;
+  border-radius: 4px;
+  font-weight: bold;
 }
+
+.saveBtn:hover{
+  background-color: #218838;
+}
+
+
+
 
 .hidden { display: none !important; }
 
