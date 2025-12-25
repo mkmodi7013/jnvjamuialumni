@@ -62,7 +62,7 @@ async function loadPending(verifier, alumniData){
   for(const key in snap.val()){
     const u = snap.val()[key];
 
-    const isAdmin = verifier.verifier === "admin";
+    const isAdmin = verifier.verifier === "Admin";
     const isMatch =
       u.entryclass === verifier.entryclass &&
       u.entryyear === verifier.entryyear;
