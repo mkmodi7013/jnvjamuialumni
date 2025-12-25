@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Verifier Alumni</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  font-family: Arial;
+  background:#f2f4f7;
+  padding:20px;
+}
+h2{text-align:center}
+table{
+  width:100%;
+  max-width:1400px;
+  margin:auto;
+  border-collapse:collapse;
+  background:#fff;
+  font-size:13px;
+}
+th,td{
+  padding:8px;
+  border:1px solid #ddd;
+  text-align:left;
+}
+th{
+  background:#0d6efd;
+  color:#fff;
+  position:sticky;
+  top:0;
+}
+tr:nth-child(even){
+  background:#f9f9f9;
+}
+.badge{
+  background:#198754;
+  color:#fff;
+  padding:3px 6px;
+  border-radius:4px;
+  font-size:11px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>All Verifier Alumni</h2>
+
+<table>
+  <thead>
+  <tr>
+    <th>UID</th>
+    <th>Name</th>
+    <th>Email</th>
+    <th>Mobile</th>
+    <th>Gender</th>
+    <th>Entry Class</th>
+    <th>Entry Year</th>
+    <th>Role</th>
+  </tr>
+</thead>
+<tbody id="tableBody">
+  <tr><td colspan="8">Loading...</td></tr>
+</tbody>
+
+</table>
+<script type="module">
+import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { db } from "./firebase.js";
+
+const tableBody = document.getElementById("tableBody");
+
+get(ref(db, "alumni"))
+.then(snapshot => {
+
+  tableBody.innerHTML = "";
+
+  if (!snapshot.exists()) {
+    tableBody.innerHTML =
+      `<tr><td colspan="8">No data found</td></tr>`;
+    return;
+  }
+
+  const verifierList = [];
+
+  snapshot.forEach(childSnap => {
+    const firebaseUid = childSnap.key;   // ✅ ONLY correct UID
+    const u = childSnap.val();
+
+    if (typeof u !== "object") return;
+
+    if (u.verifier === "Verifier") {
+      verifierList.push({
+        firebaseUid,
+        name: u.name,
+        email: u.email || u.password || "-",   // 🔹 fallback (email often stored in password)
+        mobile: u.mobile,
+        gender: u.gender,
+        entryclass: u.entryclass || "-",
+        entryyear: u.entryyear
+      });
+    }
+  });
+
+  // 🔼 Sort by Entry Year (ascending)
+  verifierList.sort((a, b) => {
+    const y1 = parseInt(a.entryyear) || 9999;
+    const y2 = parseInt(b.entryyear) || 9999;
+    return y1 - y2;
+  });
+
+  if (verifierList.length === 0) {
+    tableBody.innerHTML =
+      `<tr><td colspan="8">No verifier found</td></tr>`;
+    return;
+  }
+
+  verifierList.forEach(u => {
+    tableBody.innerHTML += `
+      <tr>
+        <td>${u.firebaseUid}</td>
+        <td>${u.name || "-"}</td>
+        <td>
+  <a href="verifierLogin.html?email=${encodeURIComponent(u.email)}">
+    ${u.email}
+  </a>
+</td>
+
+        <td>${u.mobile || "-"}</td>
+        <td>${u.gender || "-"}</td>
+        <td>${u.entryclass}</td>
+        <td>${u.entryyear || "-"}</td>
+        <td><span class="badge">Verifier</span></td>
+      </tr>
+    `;
+  });
+
+})
+.catch(err => {
+  console.error("FETCH ERROR:", err);
+  tableBody.innerHTML =
+    `<tr><td colspan="8">Error loading data</td></tr>`;
+});
+</script>
+
+
+</body>
+</html>

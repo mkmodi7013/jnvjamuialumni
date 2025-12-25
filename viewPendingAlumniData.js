@@ -1,110 +1,135 @@
-import { initializeApp } from
-"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { auth, db, secondaryAuth } from "./firebase.js";
 
 import {
-  getDatabase, ref, get, set, remove
+  onAuthStateChanged,
+  createUserWithEmailAndPassword
+} from
+"https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+import {
+  ref, get, set, remove
 } from
 "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// 🔥 Firebase Config
-const firebaseConfig = {
-  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
-  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
-  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
-  projectId: "jnvjamuialumni-edceb",
-  storageBucket: "jnvjamuialumni-edceb.appspot.com",
-  messagingSenderId: "412877503961",
-  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
-};
+const tbody = document.querySelector("#pendingTable tbody");
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const tableBody = document.querySelector("#pendingTable tbody");
+/* 🔐 Auth check */
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    alert("Please login first");
+    window.location.href = "login.html";
+    return;
+  }
 
-// ================= LOAD PENDING =================
-async function loadPending(){
-  tableBody.innerHTML = `<tr><td colspan="7">Loading...</td></tr>`;
+  const email = user.email.toLowerCase();
 
+  // 🔍 Find verifier in alumni
+  const alumniSnap = await get(ref(db,"alumni"));
+  if(!alumniSnap.exists()){
+    tbody.innerHTML = `<tr><td colspan="7">No alumni found</td></tr>`;
+    return;
+  }
+
+  const alumniData = alumniSnap.val();
+  let verifier = null;
+
+  for(const id in alumniData){
+    if(alumniData[id].email?.toLowerCase() === email){
+      verifier = alumniData[id];
+      break;
+    }
+  }
+
+  if(!verifier){
+    alert("Access denied");
+    return;
+  }
+
+  loadPending(verifier, alumniData);
+});
+
+/* 🔹 Load pending alumni */
+async function loadPending(verifier, alumniData){
   const snap = await get(ref(db,"pending_alumni"));
   if(!snap.exists()){
-    tableBody.innerHTML = `<tr><td colspan="7">No pending users</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7">No pending alumni</td></tr>`;
     return;
   }
 
-  const data = snap.val();
-  tableBody.innerHTML = "";
+  tbody.innerHTML = "";
+  let i = 1;
 
-  let i=1;
-  for(const key in data){
-    const a = data[key];
+  for(const key in snap.val()){
+    const u = snap.val()[key];
 
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${i++}</td>
-      <td>${a.name || ""}</td>
-      <td>${a.entryyear || ""}</td>
-      <td>${a.entryclass || ""}</td>
-      <td>${a.email || ""}</td>
-      <td>${a.mobile || ""}</td>
-      <td>
-        <button class="verify">Verify</button><br>
-        <button class="reject">Reject</button>
-      </td>
-    `;
+    const isAdmin = verifier.verifier === "admin";
+    const isMatch =
+      u.entryclass === verifier.entryclass &&
+      u.entryyear === verifier.entryyear;
 
-    tr.querySelector(".verify").onclick = ()=>verifyUser(key);
-    tr.querySelector(".reject").onclick = ()=>rejectUser(key);
+    if(isAdmin || isMatch){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${i++}</td>
+        <td>${u.name}</td>
+        <td>${u.entryyear}</td>
+        <td>${u.entryclass}</td>
+        <td>${u.email}</td>
+        <td>${u.mobile}</td>
+        <td>
+          <button class="verify">Verify</button>
+          <button class="reject">Reject</button>
+        </td>
+      `;
 
-    tableBody.appendChild(tr);
+      // ✅ VERIFY
+      tr.querySelector(".verify").onclick = async ()=>{
+        if(!confirm("Verify this alumni?")) return;
+
+        let max = 0;
+        Object.keys(alumniData).forEach(id=>{
+          const n = parseInt(id.replace("jnvjamui",""));
+          if(n > max) max = n;
+        });
+
+        const newId = "jnvjamui" + (max + 1);
+
+        await set(ref(db,"alumni/"+newId),{
+          ...u,
+          alumniId:newId,
+          verified:true,
+          verifiedAt:new Date().toISOString()
+        });
+
+        // 🔐 Create Auth user (password 123456)
+        try{
+          await createUserWithEmailAndPassword(
+            secondaryAuth,
+            u.email,
+            "123456"
+          );
+        }catch(e){
+          console.warn("Auth:", e.message);
+        }
+
+        await remove(ref(db,"pending_alumni/"+key));
+        alert("Verified successfully");
+        location.reload();
+      };
+
+      // ❌ REJECT
+      tr.querySelector(".reject").onclick = async ()=>{
+        if(!confirm("Reject this entry?")) return;
+        await remove(ref(db,"pending_alumni/"+key));
+        location.reload();
+      };
+
+      tbody.appendChild(tr);
+    }
+  }
+
+  if(i === 1){
+    tbody.innerHTML =
+      `<tr><td colspan="7">No matching pending alumni</td></tr>`;
   }
 }
-
-// ================= VERIFY USER =================
-async function verifyUser(pendingKey){
-
-  if(!confirm("Verify this alumni?")) return;
-
-  // 1️⃣ Pending data
-  const snap = await get(ref(db,"pending_alumni/"+pendingKey));
-  if(!snap.exists()){
-    alert("Data not found");
-    return;
-  }
-  const data = snap.val();
-
-  // 2️⃣ Find last alumni ID
-  const alumniSnap = await get(ref(db,"alumni"));
-  const alumniData = alumniSnap.exists()? alumniSnap.val() : {};
-
-  let max = 0;
-  Object.keys(alumniData).forEach(id=>{
-    const n = parseInt(id.replace("jnvjamui",""));
-    if(!isNaN(n) && n>max) max=n;
-  });
-
-  const newId = "jnvjamui" + (max+1);
-
-  // 3️⃣ Save to alumni
-  await set(ref(db,"alumni/"+newId),{
-    ...data,
-    alumniId:newId,
-    verified:true,
-    verifiedAt:new Date().toISOString()
-  });
-
-  // 4️⃣ Remove pending
-  await remove(ref(db,"pending_alumni/"+pendingKey));
-
-  alert("Verified as "+newId);
-  loadPending();
-}
-
-// ================= REJECT USER =================
-async function rejectUser(key){
-  if(!confirm("Reject & delete this entry?")) return;
-  await remove(ref(db,"pending_alumni/"+key));
-  loadPending();
-}
-
-// ================= INIT =================
-loadPending();

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verifier Login</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+  }
+  .login-box {
+    background: #fff;
+    padding: 25px;
+    width: 320px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  }
+  h2 { text-align: center; color: #d32f2f; margin-bottom: 20px; }
+  input { width: 100%; padding: 10px; margin: 8px 0; border-radius: 5px; border: 1px solid #ccc; }
+  input[readonly]{ background: #e9ecef; cursor: not-allowed; }
+  button { width: 100%; padding: 10px; background: #d32f2f; color: #fff; border: none; border-radius: 5px; cursor: pointer; }
+  button:hover { background: #b71c1c; }
+</style>
+</head>
+<body>
+
+<div class="login-box">
+  <h2>Verifier Login</h2>
+  <input type="email" id="email" placeholder="Verifier Email" readonly />
+  <input type="password" id="password" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyByBYjFFEgtmhoNnyNF55vjiVBhMteIvcQ",
+  authDomain: "jnvjamuialumni-edceb.firebaseapp.com",
+  databaseURL: "https://jnvjamuialumni-edceb-default-rtdb.firebaseio.com",
+  projectId: "jnvjamuialumni-edceb",
+  storageBucket: "jnvjamuialumni-edceb.appspot.com",
+  messagingSenderId: "412877503961",
+  appId: "1:412877503961:web:8cfc88edcc694a43b9edc8"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+// 🔹 Auto-fill email from URL
+const params = new URLSearchParams(window.location.search);
+const emailFromUrl = params.get("email");
+if(emailFromUrl){
+  const emailInput = document.getElementById("email");
+  emailInput.value = emailFromUrl;
+}
+
+// 🔹 Login Button
+document.getElementById("loginBtn").addEventListener("click", async () => {
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  if(!email || !password){
+    alert("Please fill all fields");
+    return;
+  }
+
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    // 🔹 Redirect to pending alumni page
+    window.location.href = "viewPendingAlumniData.html";
+  } catch(err){
+    alert("❌ Login failed: "+err.message);
+  }
+});
+</script>
+
+</body>
+</html>
