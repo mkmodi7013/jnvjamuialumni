@@ -12,6 +12,20 @@ body{
   padding:20px;
 }
 h2{text-align:center}
+
+.filter-box{
+  max-width:1400px;
+  margin:10px auto 15px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+.filter-box input,
+.filter-box select{
+  padding:8px;
+  font-size:14px;
+}
+
 table{
   width:100%;
   max-width:1400px;
@@ -41,6 +55,7 @@ tr:nth-child(even){
   border-radius:4px;
   font-size:11px;
 }
+a{color:#0d6efd;text-decoration:none}
 </style>
 </head>
 
@@ -48,103 +63,160 @@ tr:nth-child(even){
 
 <h2>All Verifier Alumni</h2>
 
-<table>
-  <thead>
-  <tr>
-    <th>UID</th>
-    <th>Name</th>
-    <th>Email</th>
-    <th>Mobile</th>
-    <th>Gender</th>
-    <th>Entry Class</th>
-    <th>Entry Year</th>
-    <th>Role</th>
-  </tr>
-</thead>
-<tbody id="tableBody">
-  <tr><td colspan="8">Loading...</td></tr>
-</tbody>
+<!-- 🔍 FILTERS -->
+<div class="filter-box">
+  <input type="text" id="searchInput" placeholder="Search name / email / mobile">
+  
+  <select id="yearFilter">
+    <option value="">All Entry Years</option>
+  </select>
 
+  <select id="genderFilter">
+    <option value="">All Gender</option>
+    <option value="Male">Male</option>
+    <option value="Female">Female</option>
+  </select>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th>UID</th>
+  <th>Name</th>
+  <th>Email</th>
+  <th>Mobile</th>
+  <th>Gender</th>
+  <th>Entry Class</th>
+  <th>Entry Year</th>
+  <th>Role</th>
+</tr>
+</thead>
+
+<tbody id="tableBody">
+<tr><td colspan="8" style="text-align:center">Loading...</td></tr>
+</tbody>
 </table>
+
 <script type="module">
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { db } from "./firebase.js";
 
 const tableBody = document.getElementById("tableBody");
+const searchInput = document.getElementById("searchInput");
+const yearFilter = document.getElementById("yearFilter");
+const genderFilter = document.getElementById("genderFilter");
 
+let allVerifiers = [];
+
+// 🔥 FETCH DATA
 get(ref(db, "alumni"))
 .then(snapshot => {
 
-  tableBody.innerHTML = "";
-
   if (!snapshot.exists()) {
     tableBody.innerHTML =
-      `<tr><td colspan="8">No data found</td></tr>`;
+      `<tr><td colspan="8" style="text-align:center">No data found</td></tr>`;
     return;
   }
 
-  const verifierList = [];
+  const list = [];
 
-  snapshot.forEach(childSnap => {
-    const firebaseUid = childSnap.key;   // ✅ ONLY correct UID
-    const u = childSnap.val();
+  snapshot.forEach(child => {
+    const uid = child.key;
+    const u = child.val();
 
-    if (typeof u !== "object") return;
-
-    if (u.verifier === "Verifier") {
-      verifierList.push({
-        firebaseUid,
-        name: u.name,
-        email: u.email || u.password || "-",   // 🔹 fallback (email often stored in password)
-        mobile: u.mobile,
-        gender: u.gender,
+    if (u && u.verifier === "Verifier") {
+      list.push({
+        firebaseUid: uid,
+        name: u.name || "-",
+        email: u.email || "-",
+        mobile: u.mobile || "-",
+        gender: u.gender || "-",
         entryclass: u.entryclass || "-",
-        entryyear: u.entryyear
+        entryyear: u.entryyear || "-"
       });
     }
   });
 
-  // 🔼 Sort by Entry Year (ascending)
-  verifierList.sort((a, b) => {
-    const y1 = parseInt(a.entryyear) || 9999;
-    const y2 = parseInt(b.entryyear) || 9999;
-    return y1 - y2;
-  });
+  // sort by entry year
+  list.sort((a,b)=>(parseInt(a.entryyear)||9999)-(parseInt(b.entryyear)||9999));
 
-  if (verifierList.length === 0) {
+  allVerifiers = list;
+  populateYearFilter(list);
+  renderTable(list);
+})
+.catch(err=>{
+  console.error(err);
+  tableBody.innerHTML =
+    `<tr><td colspan="8" style="text-align:center">Error loading data</td></tr>`;
+});
+
+// 🧾 RENDER TABLE
+function renderTable(data){
+  if(data.length===0){
     tableBody.innerHTML =
-      `<tr><td colspan="8">No verifier found</td></tr>`;
+      `<tr><td colspan="8" style="text-align:center">No result</td></tr>`;
     return;
   }
 
-  verifierList.forEach(u => {
-    tableBody.innerHTML += `
-      <tr>
-        <td>${u.firebaseUid}</td>
-        <td>${u.name || "-"}</td>
-        <td>
-  <a href="verifierLogin.html?email=${encodeURIComponent(u.email)}">
-    ${u.email}
-  </a>
-</td>
-
-        <td>${u.mobile || "-"}</td>
-        <td>${u.gender || "-"}</td>
-        <td>${u.entryclass}</td>
-        <td>${u.entryyear || "-"}</td>
-        <td><span class="badge">Verifier</span></td>
-      </tr>
-    `;
+  let rows = "";
+  data.forEach(u=>{
+    rows += `
+    <tr>
+      <td>${u.firebaseUid}</td>
+      <td>${u.name}</td>
+      <td>
+        ${u.email !== "-" 
+          ? `<a href="verifierLogin.html?email=${encodeURIComponent(u.email)}">${u.email}</a>`
+          : "-"
+        }
+      </td>
+      <td><a href="tel:${u.mobile}">${u.mobile}</a></td>
+      <td>${u.gender}</td>
+      <td>${u.entryclass}</td>
+      <td>${u.entryyear}</td>
+      <td><span class="badge">Verifier</span></td>
+    </tr>`;
   });
 
-})
-.catch(err => {
-  console.error("FETCH ERROR:", err);
-  tableBody.innerHTML =
-    `<tr><td colspan="8">Error loading data</td></tr>`;
-});
-</script>
+  tableBody.innerHTML = rows;
+}
 
+// 📅 YEAR DROPDOWN
+function populateYearFilter(data){
+  const years = [...new Set(data.map(u=>u.entryyear).filter(y=>y!=="-"))];
+  years.forEach(y=>{
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    yearFilter.appendChild(opt);
+  });
+}
+
+// 🔍 FILTER LOGIC
+function applyFilter(){
+  const search = searchInput.value.toLowerCase();
+  const year = yearFilter.value;
+  const gender = genderFilter.value;
+
+  const filtered = allVerifiers.filter(u=>{
+    const matchSearch =
+      u.name.toLowerCase().includes(search) ||
+      u.email.toLowerCase().includes(search) ||
+      u.mobile.includes(search);
+
+    const matchYear = !year || u.entryyear === year;
+    const matchGender = !gender || u.gender === gender;
+
+    return matchSearch && matchYear && matchGender;
+  });
+
+  renderTable(filtered);
+}
+
+searchInput.addEventListener("input", applyFilter);
+yearFilter.addEventListener("change", applyFilter);
+genderFilter.addEventListener("change", applyFilter);
+</script>
 
 </body>
 </html>
